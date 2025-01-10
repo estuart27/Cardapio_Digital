@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block titulo %}Criar perfil | {% endblock %}
+
+{% block conteudo %}
+
+<div class="row">
+
+    {% if not request.user.is_authenticated %}
+    <div class="col-lg mt-3">
+        <h4>Login</h4>
+        <p>Se você já fez cadastro, basta entrar com seu usuário e senha abaixo:</p>
+
+        <form method="POST" action="{% url 'perfil:login' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="InputUsuario1">Usuário</label>
+                <input type="text" name='username' class="form-control" id="InputUsuario1"
+                    aria-describedby="usuarioHelp" placeholder="Digite seu usuário">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">Senha:</label>
+                <input name='password' type="password" class="form-control" id="exampleInputPassword1"
+                    placeholder="Digite sua senha">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Entrar</button>
+        </form>
+
+
+    </div>
+    {% endif %}
+
+    <div class="col-lg mt-3">
+
+        {% block titulocadastro %}
+        <h4>Cadastro</h4>
+        <p>
+            Caso ainda não tenha cadastro, utilize o formulário a seguir para se
+            cadastrar
+        </p>
+        {% endblock %}
+
+        <form method="POST" action="" style="max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label for="userform" style="font-weight: bold; margin-bottom: 5px; display: block;">User Form</label>
+                {{ userform.as_p }}
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="perfilform" style="font-weight: bold; margin-bottom: 5px; display: block;">Perfil Form</label>
+                {{ perfilform.as_p }}
+            </div>
+            
+        </form>
+        
+        <style>
+            /* Estilos para os campos de entrada */
+            input[type="text"], input[type="password"], input[type="email"], select, textarea {
+                width: 100%;
+                padding: 10px;
+                margin-top: 5px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+                font-size: 16px;
+                font-family: Arial, sans-serif;
+            }
+        
+            /* Foco nos campos de entrada */
+            input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, select:focus, textarea:focus {
+                border-color: #007bff;
+                outline: none;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+        </style>
+        
+
+            <div class="row">
+                <div class="col">
+                    <button type="submit" class='btn btn-primary btn-block btn-lg'>
+                        Enviar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

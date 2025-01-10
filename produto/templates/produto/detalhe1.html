@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load omfilters %}
+
+{% block titulo %}{{ produto.nome }} | {% endblock %}
+
+{% block conteudo %}
+<div class="row">
+    <div class="col-lg-6 position-relative">
+        <div class="row no-gutters">
+            <div class="col-lg-12">
+                {% if produto.imagem %}
+                <img class="img-fluid rounded shadow-lg" src="{{ produto.imagem.url }}" style="width: 100%; height: auto; object-fit: cover; transition: transform 0.3s, box-shadow 0.3s;">
+                {% if produto.preco_marketing_promocional %}
+                <div class="badge badge-danger position-absolute" style="top: 10px; left: 10px; font-size: 1.2rem;">Promoção</div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+       <div class="col-lg-6">
+            <div class="mt-4 mt-lg-0">
+                <h1 class="h2 text-primary">{{ produto.nome }}</h1>
+                <p class="lead text-muted">{{ produto.descricao_curta }}</p>
+                <p class="lead">
+                    {% if produto.preco_marketing_promocional %}
+                    <span id="variation-preco-promocional" class="lead text-success" style="font-size: 2rem; font-weight: bold;">
+                        {{ produto.preco_marketing_promocional|formata_preco }}
+                    </span>
+                    <span id="variation-preco" class="lead text-muted" style="text-decoration: line-through; font-size: 1.5rem;">
+                        {{ produto.preco_marketing|formata_preco }}
+                    </span>
+                    {% else %}
+                    <span id="variation-preco" class="lead text-success" style="font-size: 2rem; font-weight: bold;">
+                        {{ produto.preco_marketing|formata_preco }}
+                    </span>
+                    {% endif %}
+                </p>
+
+            <form action="{% url 'produto:adicionaraocarrinho' %}" id="form-add-to-cart">
+                <div class="form-group">
+                    <select id="select-variacoes" name="vid" class="form-control form-control-lg">
+                        {% for variacao in produto.variacao_set.all %}
+
+                        {% if variacao.preco_promocional %}
+                        <option data-preco="{{ variacao.preco|formata_preco }}"
+                            data-preco-promocional="{{ variacao.preco_promocional|formata_preco }}"
+                            value="{{ variacao.id }}">
+                            {% if variacao.nome %}
+                            {{ variacao.nome }}
+                            {% else %}
+                            {{ variacao }}
+                            {% endif %}
+                        </option>
+                        {% else %}
+                        <option data-preco="{{ variacao.preco|formata_preco }}" value="{{ variacao.id }}">
+                            {% if variacao.nome %}
+                            {{ variacao.nome }}
+                            {% else %}
+                            {{ variacao }}
+                            {% endif %}
+                        </option>
+                        {% endif %}
+
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="text-left">
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">
+                        <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                        Adicionar ao carrinho
+                    </button>
+                </div>
+
+                
+                <div class="mt-4">
+                    <ul class="list-inline">
+                        <li class="list-inline-item"><i class="fa fa-truck" aria-hidden="true"></i> Frete Grátis</li>
+                        <li class="list-inline-item"><i class="fa fa-refresh" aria-hidden="true"></i> Devolução Garantida</li>
+                        <li class="list-inline-item"><i class="fa fa-shield" aria-hidden="true"></i> Compra Segura</li>
+                    </ul>
+                </div>
+
+            </form>
+
+
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-12">
+        <div class="bg-primary text-white rounded-top p-3 text-center">
+            <h3 class="mb-0">{{ produto.nome }}</h3>
+        </div>
+        <div class="border border-primary rounded-bottom p-3 bg-light shadow-sm">
+            <p class="text-dark mb-0" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.6;">
+                {{ produto.descricao_longa|linebreaks }}
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<div class="row mt-5">
+    <div class="col-lg-12">
+        <h3 class="text-center text-primary">Produtos Relacionados</h3>
+        <div class="row">
+            {% for produto_relacionado in produtos_relacionados %}
+            <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+                <div class="card">
+                    <img class="card-img-top" src="{{ produto_relacionado.imagem.url }}" alt="{{ produto_relacionado.nome }}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ produto_relacionado.nome }}</h5>
+                        <p class="card-text text-success">{{ produto_relacionado.preco_marketing|formata_preco }}</p>
+                        <a href="{{ produto_relacionado.get_absolute_url }}" class="btn btn-outline-primary btn-sm">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+.img-fluid:hover {
+    transform: scale(1.02);
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+</style>
+
+
+{% endblock %}

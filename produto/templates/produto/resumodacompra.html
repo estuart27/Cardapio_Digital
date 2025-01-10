@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load omfilters %}
+
+{% block titulo %}Resumo da compra | {% endblock %}
+
+{% block conteudo %}
+<div class="container mb-5">
+    <!-- Seção de Dados do Usuário -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h2>Resumo da sua compra</h2>
+            <section></section>
+        </div>
+    </div>
+
+    <!-- Dados do Usuário -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="p-4 bg-light border rounded">
+                <h5 class="mb-3">Dados do usuário</h5>
+                <p>Caso precise editar, <a href="{% url 'perfil:criar' %}">clique aqui</a></p>
+                <dl class="row">
+                    <dt class="col-lg-3">Nome:</dt>
+                    <dd class="col-lg-9">{{ usuario.first_name }}</dd>
+                    <dt class="col-lg-3">Sobrenome:</dt>
+                    <dd class="col-lg-9">{{ usuario.last_name }}</dd>
+
+                    <dt class="col-lg-3">Idade:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.idade }}</dd>
+                    <dt class="col-lg-3">Nascimento:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.data_nascimento }}</dd>
+
+                    <dt class="col-lg-3">CPF:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.cpf }}</dd>
+                    <dt class="col-lg-3">E-mail:</dt>
+                    <dd class="col-lg-9">{{ usuario.email }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dados de Endereço -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="p-4 bg-light border rounded">
+                <h5 class="mb-3">Dados de endereço</h5>
+                <p>Caso precise editar, <a href="{% url 'perfil:criar' %}">clique aqui</a></p>
+                <dl class="row">
+                    <dt class="col-lg-3">Endereço:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.endereco }}</dd>
+                    <dt class="col-lg-3">Número:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.numero }}</dd>
+
+                    <dt class="col-lg-3">Complemento:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.complemento }}</dd>
+                    <dt class="col-lg-3">Bairro:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.bairro }}</dd>
+
+                    <dt class="col-lg-3">Cidade:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.cidade }}</dd>
+                    <dt class="col-lg-3">Estado:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.estado }}</dd>
+
+                    <dt class="col-lg-3">CEP:</dt>
+                    <dd class="col-lg-9">{{ usuario.perfil.cep }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo do Carrinho -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h3>Resumo do carrinho</h3>
+            <p class="lead">Os produtos, quantidades e preços que você escolheu.</p>
+            {% include 'parciais/_carrinho.html' %}
+        </div>
+    </div>
+
+    <!-- Total do Carrinho -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <p class="lead text-center">
+                <span class="font-weight-bold">Total do carrinho:</span> 
+                {{ carrinho|cart_totals|formata_preco }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Botão de Finalização -->
+    <div class="row">
+        <div class="col-lg-12">
+            {% comment %} <a class="btn btn-primary btn-lg btn-block" href="{% url 'pedido:salvarpedido' %}">
+                Realizar pedido 
+            </a> {% endcomment %}
+            <a class="btn btn-dark btn-lg w-100 position-relative" 
+            href="{% url 'pedido:salvarpedido' %}" 
+            style="background-color: #2c3e50; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);">
+             <i class="fas fa-shopping-cart" style="margin-right: 10px;"></i>
+             Realizar pedido 
+         </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

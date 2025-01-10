@@ -1,0 +1,97 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Página</title>
+    <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        #footer {
+            background-color: #f8f9fa;
+            color: #333;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #footer .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        #footer .credits {
+            margin-top: 10px;
+        }
+
+        #footer .credits a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        #footer .credits a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-icons {
+            margin-top: 15px;
+        }
+
+        .footer-icons a {
+            color: #333;
+            margin: 0 10px;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .footer-icons a:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        <!-- Aqui você pode adicionar o conteúdo da sua página -->
+    </div>
+
+    <footer id="footer">
+        <div class="container">
+            <p>© <span>Estuart Silvestre</span> <strong class="px-1 sitename">SilvestreCode</strong> <span>Contato (43) 99634-1638</span></p>
+            <div class="footer-icons">
+                <a href="https://web.facebook.com/?locale=pt_BR&_rdc=1&_rdr"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/estuartsilvestre24/"><i class="fab fa-instagram"></i></a>
+                <a href="https://wa.me/5543996341638?text="><i class="fab fa-whatsapp"></i></a>
+
+            </div>
+            <div class="credits">
+                Designed by <a href="https://google.com/">SilvestreCode</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'assets/bootstrap/js/jquery-3.2.1.slim.min.js'%}"></script>
+    <script src="{% static 'assets/bootstrap/js/popper.min.js'%}"></script>
+    <script src="{% static 'assets/bootstrap/js/bootstrap.min.js'%}"></script>
+    <script defer src="{% static 'assets/font-awesome/js/all.js'%}"></script>
+    <script src="{% static 'assets/custom/js/scripts.js'%}"></script>
+</body>
+</html>

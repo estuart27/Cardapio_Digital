@@ -1,0 +1,73 @@
+{% load static %}
+{% load omfilters %}
+
+<div class="row" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; padding: 20px;">
+    <div class="col">
+        <h3 class="mb-4">{{ pedido }}</h3>
+
+        <div class="row mb-4">
+            <div class="col-lg-2 font-weight-bold text-muted">Número do pedido:</div>
+            <div class="col-lg-4">{{ pedido.id }}</div>
+            <div class="col-lg-2 font-weight-bold text-muted">Total a pagar:</div>
+            <div class="col-lg-4">{{ pedido.total|formata_preco }}</div>
+
+            <div class="col-lg-2 font-weight-bold text-muted">QTD. Itens:</div>
+            <div class="col-lg-4">{{ pedido.qtd_total }}</div>
+            <div class="col-lg-2 font-weight-bold text-muted">Status:</div>
+            <div class="col-lg-4">{{ pedido.get_status_display }}</div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col">
+                <h3>Produtos</h3>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="d-none d-lg-block">Imagem</th>
+                        <th>Produto</th>
+                        <th>V.</th>
+                        <th>QTD.</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in pedido.itempedido_set.all %}
+                    <tr>
+                        <td class="d-none d-lg-block">
+                            <img class="cart-img img-fluid" src="{% get_media_prefix %}{{ linha.imagem }}" alt="{{ linha.produto }}">
+                        </td>
+                        <td>{{ linha.produto }}</td>
+                        <td>{{ linha.variacao }}</td>
+                        <td>{{ linha.quantidade }}</td>
+                        <td>
+                            {% if linha.preco_promocional %}
+                            {{ linha.preco_promocional|formata_preco }}
+                            {% else %}
+                            {{ linha.preco|formata_preco }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cart-img {
+        max-width: 100px; /* Ajuste conforme necessário */
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    .table th, .table td {
+        vertical-align: middle;
+    }
+    .table th {
+        background-color: #f1f1f1;
+    }
+</style>

@@ -1,0 +1,91 @@
+<!-- Template Principal (carrinho.html) -->
+{% extends 'base.html' %}
+{% load omfilters %}
+
+{% block titulo %}Meu Pedido | {% endblock %}
+
+{% block conteudo %}
+<div class="container py-4">
+    {% if carrinho %}
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <div class="d-inline-block position-relative">
+                <h2 class="display-5 mb-0">🍱 Marmitas Selecionadas</h2>
+                <div class="position-absolute" style="right: -30px; top: -15px">
+                    <span class="badge rounded-pill bg-danger">
+                        {{ carrinho|length }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-0">
+                    {% include 'parciais/_carrinho.html' %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3 position-sticky" style="top: 2rem;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">💰 Resumo do Pedido</h5>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>{{ carrinho|cart_totals|formata_preco }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Taxa de entrega:</span>
+                        <span>R$ 5,00</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-4 p-3 bg-light rounded">
+                        <span class="h5 mb-0">Total:</span>
+                        <span class="h5 mb-0">{{ carrinho|cart_totals|formata_preco }}</span>
+                    </div>
+
+                    {% if request.user.is_authenticated %}
+                    <a class="btn btn-dark btn-lg w-100 position-relative" 
+                    href="{% url 'produto:resumodacompra' %}" 
+                    style="background-color: #2c3e50; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);">
+                     <i class="fas fa-shopping-cart" style="margin-right: 10px;"></i>
+                     Finalizar Pedido
+                 </a>
+                    {% else %}
+                    <a class="btn btn-success btn-lg w-100" href="{% url 'perfil:criar' %}">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Cadastrar para Continuar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="row min-vh-50 align-items-center">
+        <div class="col-12 text-center">
+            <div class="empty-cart-animation mb-4">
+                <i class="fas fa-shopping-basket fa-4x text-muted"></i>
+            </div>
+            <h3 class="text-muted">Seu carrinho está vazio</h3>
+            <p class="lead mb-4">Que tal escolher uma de nossas deliciosas marmitas?</p>
+            {% comment %} <a href="{% url 'produto:lista' %}" class="btn btn-lg btn-primary">
+                <i class="fas fa-utensils me-2"></i>
+                Ver Cardápio do Dia
+            </a> {% endcomment %}
+            <a class="btn btn-dark btn-lg w-100 position-relative" 
+            href="{% url 'produto:lista' %}" 
+            style="background-color: #2c3e50; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);">
+             <i class="fas fa-shopping-cart" style="margin-right: 10px;"></i>
+             Ver Cardápio do Dia
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

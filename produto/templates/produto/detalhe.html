@@ -1,0 +1,785 @@
+{% extends 'base.html' %}
+{% load omfilters %}
+
+{% block titulo %}{{ produto.nome }} | {% endblock %}
+
+{% block conteudo %}
+
+
+<a href="{% url 'produto:carrinho' %}"class="cart-icon" style="text-decoration: none;">
+    <i class="fas fa-shopping-cart"></i>
+    <span class="cart-count">{{ request.session.carrinho|cart_total_qtd }}</span> <!-- Exibe a quantidade total de itens -->
+</a>
+
+<div class="product-hero">
+    <div class="container">
+        <div class="product-wrapper">
+            <!-- Imagem do Produto -->
+            <div class="product-image">
+                {% if produto.imagem %}
+                <div class="image-container">
+                    <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}">
+                    {% if produto.preco_marketing_promocional %}
+                    <span class="promo-tag">Oferta Especial</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Detalhes do Produto -->
+            <div class="product-info">
+                <div class="category-tag">{{ produto.category }}</div>
+                <h1>{{ produto.nome }}</h1>
+                <div class="rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                    <span>(4.5)</span>
+                </div>
+
+                <div class="description">
+                    <p>{{ produto.descricao_curta }}</p>
+                </div>
+
+                <div class="price-box">
+                    {% if produto.preco_marketing_promocional %}
+                    <div class="price">
+                        <span class="current">{{ produto.preco_marketing_promocional|formata_preco }}</span>
+                        <span class="original">{{ produto.preco_marketing|formata_preco }}</span>
+                    </div>
+                    {% else %}
+                    <div class="price">
+                        <span class="current">{{ produto.preco_marketing|formata_preco }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <form action="{% url 'produto:adicionaraocarrinho' %}" id="form-add-to-cart">
+                    <div class="size-selector">
+                        <label>Tamanho da Marmita</label>
+                        <div class="options">
+                            {% for variacao in produto.variacao_set.all %}
+                            <div class="option">
+                                <input type="radio" 
+                                       name="vid" 
+                                       id="size-{{ variacao.id }}" 
+                                       value="{{ variacao.id }}"
+                                       data-preco="{{ variacao.preco|formata_preco }}"
+                                       {% if variacao.preco_promocional %}
+                                       data-preco-promocional="{{ variacao.preco_promocional|formata_preco }}"
+                                       {% endif %}
+                                       {% if forloop.first %}checked{% endif %}>
+                                <label for="size-{{ variacao.id }}">
+                                    {{ variacao.nome|default:variacao }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="quantity-selector">
+                        <label>Quantidade</label>
+                        <div class="quantity-controls">
+                            <button type="button" class="qty-btn minus">-</button>
+                            <input type="number" name="quantidade" value="1" min="1" max="10">
+                            <button type="button" class="qty-btn plus">+</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="add-to-cart">
+                        <span class="icon"><i class="fas fa-shopping-cart"></i></span>
+                        <span class="text">Adicionar ao Carrinho</span>
+                    </button>
+                </form>
+
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-clock"></i>
+                        <span>Entrega em 30min</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-fire"></i>
+                        <span>Comida Quentinha</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-leaf"></i>
+                        <span>100% Natural</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Seção de Detalhes -->
+<div class="details-section">
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="ingredients">Ingredientes</button>
+            <button class="tab-btn" data-tab="nutrition">Informação Nutricional</button>
+            <button class="tab-btn" data-tab="delivery">Entrega</button>
+        </div>
+
+        <div class="tab-content active" id="ingredients">
+            <div class="ingredients-grid">
+                {{ produto.descricao_longa|linebreaks }}
+            </div>
+        </div>
+
+        <div class="tab-content" id="nutrition">
+            <div class="nutrition-info">
+                <div class="nutrition-item">
+                    <span class="label">Calorias</span>
+                    <span class="value">450 kcal</span>
+                </div>
+                <div class="nutrition-item">
+                    <span class="label">Proteínas</span>
+                    <span class="value">30g</span>
+                </div>
+                <div class="nutrition-item">
+                    <span class="label">Carboidratos</span>
+                    <span class="value">45g</span>
+                </div>
+                <div class="nutrition-item">
+                    <span class="label">Gorduras</span>
+                    <span class="value">15g</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="delivery">
+            <div class="delivery-info">
+                <p>Entregamos em toda a cidade</p>
+                <p>Tempo médio de entrega: 30-45 minutos</p>
+                <p>Taxa de entrega calculada com base na sua localização</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% comment %} <!-- Detalhes do Produto -->
+<div class="product-detail">
+    <h1>{{ produto.nome }}</h1>
+    <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}">
+    <p>{{ produto.descricao_longa }}</p>
+    <span class="price">{{ produto.preco_marketing|formata_preco }}</span>
+    <!-- Outros detalhes do produto -->
+</div>
+
+<!-- Produtos Relacionados -->
+<div class="related-products">
+    <div class="container">
+        <h2>Você Também Pode Gostar</h2>
+        <div class="products-grid">
+            {% for produto_relacionado in produtos_relacionados %}
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{{ produto_relacionado.imagem.url }}" alt="{{ produto_relacionado.nome }}">
+                </div>
+                <div class="product-details">
+                    <h3>{{ produto_relacionado.nome }}</h3>
+                    <span class="price">{{ produto_relacionado.preco_marketing|formata_preco }}</span>
+                    <a href="{{ produto_relacionado.get_absolute_url }}" class="view-more">Ver Detalhes</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div> {% endcomment %}
+
+<style>
+    .cart-icon {
+        position: fixed;
+        bottom: 20px; /* Distância do canto inferior */
+        right: 20px; /* Distância do canto direito */
+        background-color: #e74c3c; /* Cor de fundo vermelha */
+        color: white; /* Cor do ícone */
+        width: 60px; /* Largura do botão */
+        height: 60px; /* Altura do botão */
+        border-radius: 50%; /* Torna o botão circular */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidade */
+        z-index: 1000; /* Garante que fique sobreposto a outros elementos */
+        text-decoration: none; /* Remove o sublinhado do link */
+    }
+    
+    .cart-icon .cart-count {
+        position: absolute;
+        top: -5px; /* Ajusta a posição do contador */
+        right: -5px;
+        background-color: #3498db; /* Cor azul do contador */
+        color: white; /* Cor do texto do contador */
+        font-size: 14px; /* Tamanho da fonte */
+        width: 24px; /* Largura do contador */
+        height: 24px; /* Altura do contador */
+        border-radius: 50%; /* Torna o contador circular */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold; /* Texto em negrito */
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* Sombra no contador */
+    }
+    
+
+/* Reset e Variáveis */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #e74c3c;
+    --text-color: #2D3436;
+    --light-gray: #F0F0F0;
+    --white: #FFFFFF;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Estilos Gerais */
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Hero Section */
+.product-hero {
+    padding: 40px 0;
+    background: var(--white);
+}
+
+.product-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+/* Imagem do Produto */
+.product-image {
+    position: relative;
+}
+
+.image-container {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.image-container img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+.image-container:hover img {
+    transform: scale(1.05);
+}
+
+.promo-tag {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+    animation: bounce 2s infinite;
+}
+
+/* Informações do Produto */
+.product-info {
+    padding: 20px;
+}
+
+.category-tag {
+    display: inline-block;
+    background: var(--secondary-color);
+    color: var(--white);
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.product-info h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.rating {
+    color: #FFD700;
+    margin-bottom: 20px;
+}
+
+.description {
+    margin-bottom: 30px;
+}
+
+/* Preço */
+.price-box {
+    margin-bottom: 30px;
+}
+
+.price .current {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.price .original {
+    font-size: 1.2rem;
+    text-decoration: line-through;
+    color: #999;
+    margin-left: 10px;
+}
+
+/* Seletor de Tamanho */
+.size-selector {
+    margin-bottom: 20px;
+}
+
+.options {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.option input[type="radio"] {
+    display: none;
+}
+
+.option label {
+    padding: 10px 20px;
+    border: 2px solid var(--light-gray);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.option input[type="radio"]:checked + label {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+/* Quantidade */
+.quantity-selector {
+    margin-bottom: 30px;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.qty-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--light-gray);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.qty-btn:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+input[type="number"] {
+    width: 60px;
+    text-align: center;
+    border: 2px solid var(--light-gray);
+    border-radius: 10px;
+    padding: 8px;
+}
+
+/* Botão Adicionar ao Carrinho */
+.add-to-cart {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.add-to-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+}
+
+/* Features */
+.features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.feature {
+    text-align: center;
+    padding: 15px;
+    background: var(--light-gray);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+    background: var(--secondary-color);
+    color: var(--white);
+}
+
+.feature i {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+/* Tabs Section */
+.details-section {
+    padding: 60px 0;
+    background: var(--light-gray);
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    border: none;
+    background: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    position: relative;
+}
+
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.tab-btn.active::after {
+    width: 100%;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Produtos Relacionados */
+.related-products {
+    padding: 60px 0;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.product-card {
+    background: var(--white);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-10px);
+}
+
+.product-card .product-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.product-card .product-details {
+    padding: 20px;
+}
+
+.product-card h3 {
+    margin-bottom: 10px;
+}
+
+.view-more {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* Continuação das Animações */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .product-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .product-info {
+        padding: 20px 0;
+    }
+
+    .features {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .product-info h1 {
+        font-size: 2rem;
+    }
+
+    .tabs {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tab-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Elementos de Nutrição */
+.nutrition-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.nutrition-item {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.nutrition-item:hover {
+    transform: translateY(-5px);
+}
+
+.nutrition-item .label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.nutrition-item .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Ingredientes Grid */
+.ingredients-grid {
+    display: grid;
+    gap: 20px;
+    padding: 20px;
+    background: var(--white);
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+
+/* Informações de Entrega */
+.delivery-info {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+
+.delivery-info p {
+    margin-bottom: 15px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.delivery-info p::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--secondary-color);
+}
+
+/* Efeitos de Hover Adicionais */
+.product-card .view-more::after {
+    content: '→';
+    margin-left: 5px;
+    transition: transform 0.3s ease;
+}
+
+.product-card .view-more:hover::after {
+    transform: translateX(5px);
+}
+
+.add-to-cart .icon {
+    transition: transform 0.3s ease;
+}
+
+.add-to-cart:hover .icon {
+    transform: translateX(5px);
+}
+
+/* Loading States */
+.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Controle de Quantidade
+    const minusBtn = document.querySelector('.minus');
+    const plusBtn = document.querySelector('.plus');
+    const qtyInput = document.querySelector('input[name="quantidade"]');
+
+    minusBtn.addEventListener('click', () => {
+        const currentValue = parseInt(qtyInput.value);
+        if (currentValue > 1) {
+            qtyInput.value = currentValue - 1;
+        }
+    });
+
+    plusBtn.addEventListener('click', () => {
+        const currentValue = parseInt(qtyInput.value);
+        if (currentValue < 10) {
+            qtyInput.value = currentValue + 1;
+        }
+    });
+
+    // Controle de Tabs
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all buttons and contents
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+
+            // Add active class to clicked button and corresponding content
+            btn.classList.add('active');
+            const tabId = btn.dataset.tab;
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+
+    // Atualização de Preço baseado na Variação
+    const radioInputs = document.querySelectorAll('input[name="vid"]');
+    const currentPriceElement = document.querySelector('.price .current');
+    const originalPriceElement = document.querySelector('.price .original');
+
+    radioInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            const precoPromocional = input.dataset.precoPromocional;
+            const preco = input.dataset.preco;
+
+            if (precoPromocional) {
+                currentPriceElement.textContent = precoPromocional;
+                originalPriceElement.textContent = preco;
+            } else {
+                currentPriceElement.textContent = preco;
+                if (originalPriceElement) {
+                    originalPriceElement.style.display = 'none';
+                }
+            }
+        });
+    });
+
+    // Animação de Entrada
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    document.querySelectorAll('.product-card, .feature, .nutrition-item').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %}
