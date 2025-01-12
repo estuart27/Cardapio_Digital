@@ -82,17 +82,24 @@
                     <div class="quantity-selector">
                         <label>Quantidade</label>
                         <div class="quantity-controls">
-                            <button type="button" class="qty-btn minus">-</button>
-                            <input type="number" name="quantidade" value="1" min="1" max="10">
-                            <button type="button" class="qty-btn plus">+</button>
+                            <button type="button" class="qty-btn minus" onclick="decreaseQuantity()">-</button>
+                            <input type="number" id="quantidade" name="quantidade" value="1" min="1" max="10" onchange="validateQuantity()">
+                            <button type="button" class="qty-btn plus" onclick="increaseQuantity()">+</button>
                         </div>
                     </div>
 
+                    
                     <button type="submit" class="add-to-cart">
                         <span class="icon"><i class="fas fa-shopping-cart"></i></span>
                         <span class="text">Adicionar ao Carrinho</span>
                     </button>
                 </form>
+                <a class="btn btn-light btn-lg w-100" 
+                href="{% url 'produto:lista' %}" 
+                style="background-color: #ecf0f1; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); color: #34495e;">
+                <i class="fas fa-book" style="margin-right: 10px;"></i>
+                 Cardápio
+             </a>
 
                 <div class="features">
                     <div class="feature">
@@ -781,5 +788,30 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(el);
     });
 });
+function increaseQuantity() {
+    let qtyInput = document.getElementById('quantidade');
+    let newQty = Math.min(parseInt(qtyInput.value) + 0, parseInt(qtyInput.max));
+    qtyInput.value = newQty;
+}
+
+function decreaseQuantity() {
+    let qtyInput = document.getElementById('quantidade');
+    let newQty = Math.max(parseInt(qtyInput.value) - 0, parseInt(qtyInput.min));
+    qtyInput.value = newQty;
+}
+
+function validateQuantity() {
+    let qtyInput = document.getElementById('quantidade');
+    if (parseInt(qtyInput.value) < parseInt(qtyInput.min)) {
+        qtyInput.value = qtyInput.min; // Ajusta para o mínimo se necessário
+    } else if (parseInt(qtyInput.value) > parseInt(qtyInput.max)) {
+        qtyInput.value = qtyInput.max; // Ajusta para o máximo se necessário
+    }
+}
+
+function addToCart(produtoId) {
+    let quantidade = document.getElementById('quantidade').value;
+    window.location.href = `{% url 'produto:adicionaraocarrinho' %}?vid=${produtoId}&quantidade=${quantidade}`;
+}
 </script>
 {% endblock %}

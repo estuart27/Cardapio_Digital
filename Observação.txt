@@ -1,2 +1,5 @@
 Atualizar dados : nao esta funcionando corretamente 
 Descrição esta passando no html
+As promoções nao estam aparecendo na soma dos valores a pagar
+Roda pe da pagina zuado 
+Filtragem em Categorias 

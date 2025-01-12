@@ -26,7 +26,7 @@ class Produto(models.Model):
     preco_marketing = models.FloatField(verbose_name='Preço')
     preco_marketing_promocional = models.FloatField(default=0, verbose_name='Preço Promo.')
     tipo = models.CharField(default='V', max_length=1, choices=(('V', 'Variável'), ('S', 'Simples'),))
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL, blank=True, null=True)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

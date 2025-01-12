@@ -39,8 +39,6 @@ class ProdutoForm(forms.ModelForm):
 
 
 
-
-
 class VariacaoObrigatoria(BaseInlineFormSet):
     def _construct_form(self, i, **kwargs):
         form = super(VariacaoObrigatoria, self)._construct_form(i, **kwargs)
