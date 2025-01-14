@@ -6,10 +6,67 @@ from django.http import HttpResponse
 from django.contrib import messages
 import json
 from django.db.models import Q
-
 from . import models
 from perfil.models import Perfil
 from .models import Category,Produto
+from django.shortcuts import render
+from pedido.models import Pedido, ItemPedido  # Importa os modelos de Pedido e ItemPedido
+
+
+
+def index(request):
+    return render(
+        request,
+        'produto/index.html',
+    )
+
+def login(request):
+    return render(
+        request,
+        'produto/login.html',
+    )
+def layout_static(request):
+    return render(
+        request,
+        'produto/layout-static.html',
+    )
+
+def layout_sidenav_light(request):
+    return render(
+        request,
+        'produto/layout-sidenav-light.html',
+    )
+
+def register(request):
+    return render(
+        request,
+        'produto/register.html',
+    )
+
+def password(request):
+    return render(
+        request,
+        'produto/password.html',
+    )
+
+def charts(request):
+    return render(
+        request,
+        'produto/charts.html',
+    )
+
+
+
+def tables(request):
+    pedidos = Pedido.objects.prefetch_related('itempedido_set').all()  # Obtém todos os pedidos com os itens relacionados
+    return render(
+        request,
+        'produto/tables.html',
+        {
+            'pedidos': pedidos  # Passa os pedidos para o contexto do template
+        },
+    )
+
 
 
 class ListaProdutos(ListView):
@@ -21,7 +78,8 @@ class ListaProdutos(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()     
+        context['categories'] = Category.objects.all()
+        context['is_lista_page'] = True  # Adiciona uma variável para identificar a página
         return context
 
 
@@ -135,92 +193,6 @@ class AdicionarAoCarrinho(View):
         )
 
         return redirect(http_referer)
-
-
-
-# class AdicionarAoCarrinho(View):
-#     def get(self, *args, **kwargs):
-#         http_referer = self.request.META.get('HTTP_REFERER', reverse('produto:lista'))
-#         variacao_id = self.request.GET.get('vid')
-
-#         if not variacao_id:
-#             messages.error(self.request, 'Produto não existe')
-#             return redirect(http_referer)
-
-#         variacao = get_object_or_404(models.Variacao, id=variacao_id)
-#         produto = variacao.produto
-
-#         produto_id = produto.id
-#         produto_nome = produto.nome
-#         variacao_nome = variacao.nome or ''
-#         preco_unitario = variacao.preco
-#         preco_unitario_promocional = variacao.preco_promocional
-#         quantidade = 1
-#         slug = produto.slug
-#         imagem = produto.imagem.name if produto.imagem else ''
-
-#         # Remova ou comente a verificação de estoque
-#         # variacao_estoque = variacao.estoque
-#         # if variacao_estoque < 1:
-#         #     messages.error(self.request, 'Estoque insuficiente')
-#         #     return redirect(http_referer)
-
-#         # Garante que o carrinho seja um dicionário
-#         if not self.request.session.get('carrinho'):
-#             self.request.session['carrinho'] = {}
-#         carrinho = self.request.session['carrinho']
-
-#         if isinstance(carrinho, str):
-#             try:
-#                 carrinho = json.loads(carrinho)
-#             except json.JSONDecodeError:
-#                 carrinho = {}
-
-#         # Adiciona ou atualiza o produto no carrinho
-#         if variacao_id in carrinho:
-#             quantidade_carrinho = carrinho[variacao_id]['quantidade']
-#             quantidade_carrinho += 1
-
-#             # Também remova ou comente a verificação de estoque aqui
-#             # if variacao_estoque < quantidade_carrinho:
-#             #     messages.warning(
-#             #         self.request,
-#             #         f'Estoque insuficiente para {quantidade_carrinho}x no '
-#             #         f'produto "{produto_nome}". Adicionamos {variacao_estoque}x '
-#             #         f'no seu carrinho.'
-#             #     )
-#             #     quantidade_carrinho = variacao_estoque
-
-#             carrinho[variacao_id]['quantidade'] = quantidade_carrinho
-#             carrinho[variacao_id]['preco_quantitativo'] = preco_unitario * quantidade_carrinho
-#             carrinho[variacao_id]['preco_quantitativo_promocional'] = preco_unitario_promocional * quantidade_carrinho
-#         else:
-#             carrinho[variacao_id] = {
-#                 'produto_id': produto_id,
-#                 'produto_nome': produto_nome,
-#                 'variacao_nome': variacao_nome,
-#                 'variacao_id': variacao_id,
-#                 'preco_unitario': preco_unitario,
-#                 'preco_unitario_promocional': preco_unitario_promocional,
-#                 'preco_quantitativo': preco_unitario,
-#                 'preco_quantitativo_promocional': preco_unitario_promocional,
-#                 'quantidade': 1,
-#                 'slug': slug,
-#                 'imagem': imagem,
-#             }
-
-#         # Salva o carrinho na sessão como um dicionário
-#         self.request.session['carrinho'] = carrinho
-#         self.request.session.save()
-
-#         messages.success(
-#             self.request,
-#             f'Produto {produto_nome} {variacao_nome} adicionado ao seu '
-#             f'carrinho {carrinho[variacao_id]["quantidade"]}x.'
-#         )
-
-#         return redirect(http_referer)
-
 
 
 class RemoverDoCarrinho(View):

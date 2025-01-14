@@ -1,73 +1,226 @@
 {% load static %}
 {% load omfilters %}
 
-<div class="row" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; padding: 20px;">
-    <div class="col">
-        <h3 class="mb-4">{{ pedido }}</h3>
+<div class="order-summary">
+    <div class="order-header">
+        <h2>Resumo do Pedido</h2>
+        <span class="order-status {{ pedido.status|lower }}">{{ pedido.get_status_display }}</span>
+    </div>
 
-        <div class="row mb-4">
-            <div class="col-lg-2 font-weight-bold text-muted">Número do pedido:</div>
-            <div class="col-lg-4">{{ pedido.id }}</div>
-            <div class="col-lg-2 font-weight-bold text-muted">Total a pagar:</div>
-            <div class="col-lg-4">{{ pedido.total|formata_preco }}</div>
-
-            <div class="col-lg-2 font-weight-bold text-muted">QTD. Itens:</div>
-            <div class="col-lg-4">{{ pedido.qtd_total }}</div>
-            <div class="col-lg-2 font-weight-bold text-muted">Status:</div>
-            <div class="col-lg-4">{{ pedido.get_status_display }}</div>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col">
-                <h3>Produtos</h3>
+    <div class="order-info">
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="label">Número do Pedido</span>
+                <span class="value">#{{ pedido.id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Total de Itens</span>
+                <span class="value">{{ pedido.qtd_total }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Total a Pagar</span>
+                <span class="value highlight">{{ pedido.total|formata_preco }}</span>
             </div>
         </div>
+    </div>
 
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="d-none d-lg-block">Imagem</th>
-                        <th>Produto</th>
-                        <th>V.</th>
-                        <th>QTD.</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for linha in pedido.itempedido_set.all %}
-                    <tr>
-                        <td class="d-none d-lg-block">
-                            <img class="cart-img img-fluid" src="{% get_media_prefix %}{{ linha.imagem }}" alt="{{ linha.produto }}">
-                        </td>
-                        <td>{{ linha.produto }}</td>
-                        <td>{{ linha.variacao }}</td>
-                        <td>{{ linha.quantidade }}</td>
-                        <td>
-                            {% if linha.preco_promocional %}
-                            {{ linha.preco_promocional|formata_preco }}
-                            {% else %}
-                            {{ linha.preco|formata_preco }}
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="order-items">
+        <h3>Itens do Pedido</h3>
+        
+        <div class="items-container">
+            {% for linha in pedido.itempedido_set.all %}
+            <div class="item-card">
+                <div class="item-image">
+                    <img  src="{% get_media_prefix %}{{ linha.imagem }}" alt="{{ linha.produto }}">
+                </div>
+                <div class="item-details">
+                    <h4>{{ linha.produto }}</h4>
+                    <div class="item-meta">
+                        <span class="variation">{{ linha.variacao }}</span>
+                        <span class="quantity">Qtd: {{ linha.quantidade }}</span>
+                    </div>
+                    <div class="item-price">
+                        {% if linha.preco_promocional %}
+                        <span class="price promotional">{{ linha.preco_promocional|formata_preco }}</span>
+                        {% else %}
+                        <span class="price">{{ linha.preco|formata_preco }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
 <style>
-    .cart-img {
-        max-width: 100px; /* Ajuste conforme necessário */
-        border-radius: 4px;
-        border: 1px solid #ddd;
+    .order-summary {
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 2rem auto;
     }
-    .table th, .table td {
-        vertical-align: middle;
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
     }
-    .table th {
-        background-color: #f1f1f1;
+
+    .order-header h2 {
+        font-size: 1.75rem;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .order-status {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .order-status.criado { background-color: #EBF8FF; color: #2B6CB0; }
+    .order-status.aprovado { background-color: #F0FFF4; color: #2F855A; }
+    .order-status.reprovado { background-color: #FFF5F5; color: #C53030; }
+    .order-status.preparando { background-color: #FFFAF0; color: #C05621; }
+    .order-status.enviado { background-color: #F0F4FF; color: #3182CE; }
+    .order-status.entregue { background-color: #F0FFF4; color: #2F855A; }
+
+    .order-info {
+        background-color: #f8fafc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-item .label {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-item .value {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1a202c;
+    }
+
+    .info-item .value.highlight {
+        color: #2563eb;
+        font-size: 1.25rem;
+    }
+
+    .order-items h3 {
+        font-size: 1.5rem;
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+    }
+
+    .items-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .item-card {
+        display: flex;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .item-image {
+        width: 100px;
+        height: 100px;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .item-details {
+        flex: 1;
+    }
+
+    .item-details h4 {
+        font-size: 1rem;
+        color: #2d3748;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .item-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .variation, .quantity {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .item-price .price {
+        font-weight: 600;
+        color: #2563eb;
+    }
+
+    .item-price .promotional {
+        color: #059669;
+    }
+
+    @media (max-width: 768px) {
+        .order-summary {
+            padding: 1rem;
+            margin: 1rem;
+        }
+
+        .items-container {
+            grid-template-columns: 1fr;
+        }
+
+        .item-card {
+            flex-direction: column;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
     }
 </style>

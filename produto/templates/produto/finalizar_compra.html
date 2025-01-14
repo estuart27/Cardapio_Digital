@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Compra</title>
+</head>
+<body>
+    <h1>Finalizar Compra</h1>
+
+    {% if carrinho %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Tamanho</th>
+                    <th>Preço</th>
+                    <th>Quantidade</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for marmita_id, item in carrinho.items %}
+                    <tr>
+                        <td>{{ item.nome }}</td>
+                        <td>{{ item.tamanho }}</td>
+                        <td>R$ {{ item.preco|floatformat:2 }}</td>
+                        <td>{{ item.quantidade }}</td>
+                        <td>R$ {{ item.preco|floatformat:2|add:item.quantidade|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Total: R$ {{ total|floatformat:2 }}</h2>
+
+        <p>Obrigado pela sua compra!</p>
+    {% else %}
+        <p>Seu carrinho está vazio.</p>
+    {% endif %}
+</body>
+</html>

@@ -11,6 +11,7 @@
                 <th>Tamanho</th>
                 <th class="text-center">QTD.</th>
                 <th class="text-end pe-4">Total</th>
+                <th class="text-center">Ações</th> <!-- Nova coluna para ações -->
             </tr>
         </thead>
         <tbody>
@@ -27,11 +28,6 @@
                         <a href="{% url 'produto:detalhe' linha.slug %}" 
                            class="text-decoration-none text-dark meal-name">
                             {{ linha.produto_nome }}
-                        </a>
-                        <a class="ms-2 remove-item" 
-                           href="{% url 'produto:removerdocarrinho' %}?vid={{ linha.variacao_id }}"
-                           title="Remover item">
-                            <i class="fas fa-times text-danger"></i>
                         </a>
                     </div>
                 </td>
@@ -58,6 +54,13 @@
                         {{ linha.preco_quantitativo|formata_preco }}
                         {% endif %}
                     </strong>
+                </td>
+                <td class="text-center"> <!-- Coluna de ações -->
+                    <a class="btn btn-danger btn-sm remove-icon" 
+                       href="{% url 'produto:removerdocarrinho' %}?vid={{ linha.variacao_id }}"
+                       title="Remover item">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
                 </td>
             </tr>
             {% endfor %}
@@ -151,5 +154,8 @@
 .empty-cart-animation {
     opacity: 0;
     animation: fadeIn 1s ease-out forwards;
+}
+.remove-icon {
+    margin-left: 8px; /* Ajuste o valor conforme necessário */
 }
 </style>

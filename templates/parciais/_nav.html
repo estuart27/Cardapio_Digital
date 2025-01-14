@@ -19,9 +19,11 @@
             <p><i class="fas fa-motorcycle"></i> Delivery em toda região</p>
             <!-- Botão para voltar ao cardápio --> {% endcomment %}
             <div class="menu-button">
-                <a href="/" class="btn btn-light">Voltar ao Cardápio</a> <!-- Link atualizado para a página inicial -->
+                {% if not is_lista_page %}
+                    <a href="/" class="btn btn-light">Voltar ao Cardápio</a>
+                {% endif %}
             </div>
-        </div>
+            
     </div>
 </header>
 
@@ -50,7 +52,7 @@
 
     :root {
         --primary-color: #2c3e50;
-        --secondary-color: #e74c3c;
+        --secondary-color: #2c3e50;
         --accent-color: #3498db;
         --success-color: #2ecc71;
         --warning-color: #f1c40f;
