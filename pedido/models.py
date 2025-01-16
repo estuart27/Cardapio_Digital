@@ -18,6 +18,8 @@ class Pedido(models.Model):
             ('Finalizado', 'Finalizado'),
         )
     )
+    data = models.DateTimeField(auto_now_add=True)
+    forma_pagamento = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f'Pedido N. {self.pk}'
@@ -33,7 +35,7 @@ class ItemPedido(models.Model):
     preco_promocional = models.FloatField(default=0)
     quantidade = models.PositiveIntegerField()
     imagem = models.CharField(max_length=2000)
-    observacao = models.TextField(blank=True, null=True, verbose_name='Observações do pedido')
+    observacao = models.TextField(blank=True, null=True)
 
 
     def __str__(self):

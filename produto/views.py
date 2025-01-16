@@ -133,6 +133,11 @@ class AdicionarAoCarrinho(View):
         http_referer = self.request.META.get('HTTP_REFERER', reverse('produto:lista'))
         variacao_id = self.request.GET.get('vid')
         quantidade = int(self.request.GET.get('quantidade', 1))  # Pega a quantidade
+        try:
+            observacao = self.request.GET['observacao']  # Acessa diretamente
+        except KeyError:
+            observacao = ''
+        print("O parâmetro 'observacao' não foi encontrado na requisição.")
 
         if not variacao_id:
             messages.error(self.request, 'Produto não existe')
@@ -180,11 +185,29 @@ class AdicionarAoCarrinho(View):
                 'quantidade': quantidade,
                 'slug': slug,
                 'imagem': imagem,
+                'observacao': observacao,  
             }
 
         # Salva o carrinho na sessão como um dicionário
         self.request.session['carrinho'] = carrinho
         self.request.session.save()
+
+        # Armazenar o item no modelo ItemPedido
+        pedido = Pedido.objects.first()  # Ajuste para obter a instância de Pedido correta
+        if pedido:
+            item_pedido = ItemPedido(
+                pedido=pedido,
+                produto=produto_nome,
+                produto_id=produto_id,
+                variacao=variacao_nome,
+                variacao_id=variacao_id,
+                preco=preco_unitario,
+                preco_promocional=preco_unitario_promocional,
+                quantidade=quantidade,
+                imagem=imagem,
+                observacao=observacao,  # Salva a observação
+            )
+            item_pedido.save()
 
         messages.success(
             self.request,

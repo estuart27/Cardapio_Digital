@@ -1,6 +1,6 @@
-Atualizar dados : nao esta funcionando corretamente 
+Atualizar dados : melhores template
+pagina de pagamento 
 Filtragem em Categorias 
-não esta salvando a opservação
 FORMA DA PAGAMENTO 
 CRIAR MODELS PARA NOVOS DADOS COMO DATA, PAGAMENTO , cliente 
 criar aviso em javascrit 

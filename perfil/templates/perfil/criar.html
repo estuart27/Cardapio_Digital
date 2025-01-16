@@ -4,6 +4,239 @@
 {% block titulo %}Criar perfil | {% endblock %}
 
 {% block conteudo %}
+    <div class="container max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg animate-fadeIn">
+        {% if messages %}
+            <div class="messages mb-6">
+                {% for message in messages %}
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded transition-all hover:shadow-md">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Título Principal com Divisor Decorativo -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800">
+                {% if user.is_authenticated %}Atualizar Dados{% else %}Criar Conta{% endif %}
+            </h1>
+            <div class="mt-4 relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center">
+                    <span class="bg-white px-4 text-sm text-gray-500">Preencha seus dados</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Seção de Dados do Usuário -->
+            <div class="bg-gray-50 p-8 rounded-lg shadow-sm transition-all hover:shadow-md">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Dados do Usuário</h2>
+                    <p class="text-gray-600 text-sm">Informações básicas para sua conta</p>
+                    <div class="w-20 h-1 bg-blue-500 mt-2"></div>
+                </div>
+                
+                {{ userform.non_field_errors }}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                        <label class="block text-gray-700 font-semibold mb-2">Nome:</label>
+                        <div class="w-full">
+                            {{ userform.first_name }}
+                        </div>
+                        {{ userform.first_name.errors }}
+                    </div>
+
+                    <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                        <label class="block text-gray-700 font-semibold mb-2">Sobrenome:</label>
+                        <div class="w-full">
+                            {{ userform.last_name }}
+                        </div>
+                        {{ userform.last_name.errors }}
+                    </div>
+
+                    <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                        <label class="block text-gray-700 font-semibold mb-2">Usuário:</label>
+                        <div class="w-full">
+                            {{ userform.username }}
+                        </div>
+                        {{ userform.username.errors }}
+                    </div>
+
+                    <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                        <label class="block text-gray-700 font-semibold mb-2">Email:</label>
+                        <div class="w-full">
+                            {{ userform.email }}
+                        </div>
+                        {{ userform.email.errors }}
+                    </div>
+
+                    <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                        <label class="block text-gray-700 font-semibold mb-2">Senha:</label>
+                        <div class="w-full">
+                            {{ userform.password }}
+                        </div>
+                        {{ userform.password.errors }}
+                    </div>
+
+                    <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                        <label class="block text-gray-700 font-semibold mb-2">Confirmar Senha:</label>
+                        <div class="w-full">
+                            {{ userform.password2 }}
+                        </div>
+                        {{ userform.password2.errors }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Dados do Perfil -->
+            <div class="bg-gray-50 p-8 rounded-lg shadow-sm transition-all hover:shadow-md">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Dados do Perfil</h2>
+                    <p class="text-gray-600 text-sm">Informações adicionais do seu perfil</p>
+                    <div class="w-20 h-1 bg-green-500 mt-2"></div>
+                </div>
+                
+                {{ perfilform.non_field_errors }}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for field in perfilform %}
+                        <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                            <label class="block text-gray-700 font-semibold mb-2">{{ field.label }}:</label>
+                            <div class="w-full">
+                                {{ field }}
+                            </div>
+                            {{ field.errors }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-blue-500 text-white font-bold py-4 px-6 rounded-lg 
+                           transition-all hover:bg-blue-600 hover:shadow-lg 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                {% if user.is_authenticated %}
+                    Atualizar
+                {% else %}
+                    Criar Conta
+                {% endif %}
+            </button>
+        </form>
+
+        {% if not user.is_authenticated %}
+            <div class="mt-12 bg-gray-50 p-8 rounded-lg shadow-sm transition-all hover:shadow-md animate-slideUp">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Login</h2>
+                    <p class="text-gray-600 text-sm">Acesse sua conta</p>
+                    <div class="w-20 h-1 bg-purple-500 mt-2"></div>
+                </div>
+                
+                <form method="POST" action="{% url 'perfil:login' %}" class="space-y-6">
+                    {% csrf_token %}
+                    <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                        <label class="block text-gray-700 font-semibold mb-2">Usuário:</label>
+                        <input type="text" name="username" 
+                               class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div class="form-group transition-all hover:transform hover:scale-[1.02]">
+                        <label class="block text-gray-700 font-semibold mb-2">Senha:</label>
+                        <input type="password" name="password"
+                               class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <button type="submit" 
+                            class="w-full bg-purple-500 text-white font-bold py-4 px-6 rounded-lg
+                                   transition-all hover:bg-purple-600 hover:shadow-lg
+                                   focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                        Entrar
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .animate-slideUp {
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .messages div {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block titulo %}Criar perfil | {% endblock %}
+
+{% block conteudo %}
 
 <div class="row">
 
@@ -90,4 +323,4 @@
     </div>
 </div>
 
-{% endblock %}
+{% endblock %} {% endcomment %}
