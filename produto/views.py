@@ -8,17 +8,13 @@ import json
 from django.db.models import Q
 from . import models
 from perfil.models import Perfil
-from .models import Category,Produto
+from .models import Category,Produto,Variacao
 from django.shortcuts import render
 from pedido.models import Pedido, ItemPedido  # Importa os modelos de Pedido e ItemPedido]
 from django.core.paginator import Paginator
 from .forms import ProdutoForm  # Certifique-se de ter um formulário configurado
+from django.db import transaction
 
-
-
-
-
-# Pagina de adminstração de produtos
 
 
 def index(request):
@@ -37,6 +33,35 @@ def layout_static(request):
         request,
         'produto/layout-static.html',
     )
+
+def register(request):
+    return render(
+        request,
+        'produto/register.html',
+    )
+
+def password(request):
+    return render(
+        request,
+        'produto/password.html',
+    )
+
+def charts(request):
+    return render(
+        request,
+        'produto/charts.html',
+    )
+
+def tables(request):
+    pedidos = Pedido.objects.prefetch_related('itempedido_set').all()  # Obtém todos os pedidos com os itens relacionados
+    return render(
+        request,
+        'produto/tables.html',
+        {
+            'pedidos': pedidos  # Passa os pedidos para o contexto do template
+        },
+    )
+
 
 def layout_sidenav_light(request):
     if request.method == 'POST':
@@ -81,47 +106,46 @@ def layout_sidenav_light(request):
         }
     )
 
-
 def pagina_adicionar(request):
-    if request.method == "POST":
+    if request.method == 'POST':
         form = ProdutoForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect('produto/index.html ')  # Substitua pela URL que lista os produtos
+            try:
+                with transaction.atomic():
+                    # Salva o produto
+                    produto = form.save()
+                    
+                    # Processa as variações
+                    variacoes_nome = request.POST.getlist('variacoes_nome[]')
+                    variacoes_preco = request.POST.getlist('variacoes_preco[]')
+                    variacoes_preco_promocional = request.POST.getlist('variacoes_preco_promocional[]')
+                    variacoes_estoque = request.POST.getlist('variacoes_estoque[]')
+
+                    # Cria as variações se for produto variável
+                    if produto.tipo == 'V':
+                        for i in range(len(variacoes_nome)):
+                            if variacoes_nome[i].strip():  # Verifica se o nome não está vazio
+                                Variacao.objects.create(
+                                    produto=produto,
+                                    nome=variacoes_nome[i],
+                                    preco=float(variacoes_preco[i] or 0),
+                                    preco_promocional=float(variacoes_preco_promocional[i] or 0),
+                                    estoque=int(variacoes_estoque[i] or 0)
+                                )
+
+                messages.success(request, 'Produto salvo com sucesso!')
+                return redirect('produto:index')
+
+            except Exception as e:
+                messages.error(request, f'Erro ao salvar produto: {str(e)}')
     else:
         form = ProdutoForm()
 
-    return render(request, 'produto/adicionar.html', {'form': form})
-
-
-def register(request):
-    return render(
-        request,
-        'produto/register.html',
-    )
-
-def password(request):
-    return render(
-        request,
-        'produto/password.html',
-    )
-
-def charts(request):
-    return render(
-        request,
-        'produto/charts.html',
-    )
-
-
-def tables(request):
-    pedidos = Pedido.objects.prefetch_related('itempedido_set').all()  # Obtém todos os pedidos com os itens relacionados
-    return render(
-        request,
-        'produto/tables.html',
-        {
-            'pedidos': pedidos  # Passa os pedidos para o contexto do template
-        },
-    )
+    context = {
+        'form': form,
+        'categories': Category.objects.all()
+    }
+    return render(request, 'produto/adicionar.html', context)
 
 
 # Pagina de adminstração de produtos -----------------------------------------

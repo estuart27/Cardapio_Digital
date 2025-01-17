@@ -1,146 +1,310 @@
 {% extends 'base1.html' %}
 {% load static %}
 
-{% block title %}Administração de Produtos{% endblock %}
+{% block title %}Adicionar Produtos{% endblock %}
 
 {% block content %}
-<style>
-    .product-row {
-        transition: all 0.3s ease;
-    }
-    .product-row:hover {
-        transform: translateX(5px);
-        background-color: #f8f9fa;
-    }
-    .product-img {
-        transition: transform 0.3s ease;
-        cursor: pointer;
-    }
-    .product-img:hover {
-        transform: scale(1.2);
-    }
-    .action-buttons {
-        opacity: 0.8;
-        transition: opacity 0.3s ease;
-    }
-    .product-row:hover .action-buttons {
-        opacity: 1;
-    }
-    .status-badge {
-        padding: 5px 10px;
-        border-radius: 15px;
-        font-size: 0.9em;
-        font-weight: 500;
-    }
-    .animate-fade {
-        animation: fadeIn 0.5s ease-in;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .card-header-custom {
-        background: linear-gradient(45deg, #2c3e50, #3498db);
-        color: white;
-        padding: 20px;
-        border-radius: 10px 10px 0 0;
-        margin-bottom: 20px;
-    }
-    .table-container {
-        box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .btn-custom {
-        transition: all 0.3s ease;
-    }
-    .btn-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-</style>
-
-<div class="container mt-4 animate-fade">
-    <div class="card-header-custom">
-        <h1 class="mb-0">
-            <i class="fas fa-utensils me-2"></i>
-            Administração de Produtos
-        </h1>
-        <p class="text-light mb-0 mt-2">Gerencie seus produtos de forma simples e eficiente</p>
-    </div>
-
-    <div class="table-container">
-        <table class="table table-hover mb-0">
-            <thead class="thead-dark">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Imagem</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Preço</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for produto in produtos %}
-                <tr class="product-row">
-                    <td>{{ forloop.counter }}</td>
-                    <td>
-                        {% if produto.imagem %}
-                        <div class="product-img">
-                            <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}" 
-                                 style="height: 50px; width: 50px; object-fit: cover; border-radius: 8px;">
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4 animate__animated animate__fadeInDown">Adicionar Produtos</h1>
+            <ol class="breadcrumb mb-4 animate__animated animate__fadeInLeft">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'produto:index' %}">Produtos</a>
+                </li>
+                <li class="breadcrumb-item active">Adicionar Produto</li>
+            </ol>
+            
+            <!-- Toast Container para Notificações -->
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1050">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="toast align-items-center text-white bg-{{ message.tags }} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                                    {{ message }}
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
                         </div>
-                        {% else %}
-                        <span class="badge bg-secondary">Sem imagem</span>
-                        {% endif %}
-                    </td>
-                    <td><strong>{{ produto.nome }}</strong></td>
-                    <td><span class="text-success">{{ produto.get_preco_formatado }}</span></td>
-                    <td>
-                        {% if produto.visivel %}
-                        <span class="status-badge bg-success text-white">Ativo</span>
-                        {% else %}
-                        <span class="status-badge bg-secondary text-white">Oculto</span>
-                        {% endif %}
-                    </td>
-                    <td class="action-buttons">
-                        <form method="post" style="display: inline;">
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="container mt-5">
+                <div class="card shadow-sm animate__animated animate__fadeIn">
+                    <div class="card-body">
+                        <h2 class="card-title mb-4">
+                            <i class="fas fa-box-open me-2"></i>Adicionar Produto e Variações
+                        </h2>
+                        <form method="post" enctype="multipart/form-data" id="produto-form" onsubmit="return validarFormulario()">
                             {% csrf_token %}
-                            <input type="hidden" name="produto_id" value="{{ produto.id }}">
-                            <button type="submit" name="delete" 
-                                    class="btn btn-danger btn-sm btn-custom" 
-                                    onclick="return confirm('Tem certeza que deseja deletar este produto?')">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
+                            <div class="row animate__animated animate__fadeInUp">
+                                <div class="col-12">
+                                    {{ form.as_p }}
+                                </div>
+                            </div>
+                            
+                            <!-- Variações -->
+                            <div id="variacoes-section" class="mt-4">
+                                <h3 class="mb-3">
+                                    <i class="fas fa-tags me-2"></i>Variações do Produto
+                                    <small class="text-muted fs-6">(Arraste para reordenar)</small>
+                                </h3>
+                                <div id="variacoes-container" class="sortable-container">
+                                    <div class="row mb-3 variacao animate__animated animate__fadeIn">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Nome da Variação</label>
+                                            <input type="text" name="variacoes_nome[]" class="form-control" placeholder="Ex: Tamanho P" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Preço</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">R$</span>
+                                                <input type="number" name="variacoes_preco[]" class="form-control preco-input" step="0.01" placeholder="0.00" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Preço Promocional</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">R$</span>
+                                                <input type="number" name="variacoes_preco_promocional[]" class="form-control" step="0.01" placeholder="0.00" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Estoque</label>
+                                            <input type="number" name="variacoes_estoque[]" class="form-control" placeholder="0" value="0" required>
+                                        </div>
+                                        <div class="col-md-2 d-flex align-items-end">
+                                            <div class="d-flex gap-2 w-100">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 drag-handle">
+                                                    <i class="fas fa-grip-lines"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm flex-grow-1" onclick="removerVariacao(this)">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary mb-3" onclick="adicionarVariacao()">
+                                    <i class="fas fa-plus me-1"></i> Adicionar Variação
+                                </button>
+                            </div>
+
+                            <!-- Botões de Ação -->
+                            <div class="mt-4 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg animate__animated animate__pulse animate__infinite">
+                                    <i class="fas fa-save me-1"></i> Salvar
+                                </button>
+                                <a href="{% url 'produto:index' %}" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                                </a>
+                            </div>
                         </form>
-                        <form method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="produto_id" value="{{ produto.id }}">
-                            <button type="submit" name="toggle_visibility" 
-                                    class="btn btn-secondary btn-sm btn-custom ms-2">
-                                {% if produto.visivel %}
-                                <i class="fas fa-eye-slash"></i>
-                                {% else %}
-                                <i class="fas fa-eye"></i>
-                                {% endif %}
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="py-4 bg-light mt-auto">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center justify-content-between small">
+                <div class="text-muted">&copy; Seu Website 2023</div>
+                <div>
+                    <a href="#">Política de Privacidade</a> &middot; <a href="#">Termos &amp; Condições</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </div>
 
+<!-- Adicione no head do seu template -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+
+<style>
+.variacao {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    padding: 15px;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.variacao:hover {
+    border-color: #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.drag-handle {
+    cursor: move;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    background: #f8f9fa;
+}
+
+.preco-input:focus {
+    animation: highlight 1s ease;
+}
+
+@keyframes highlight {
+    0% { background-color: #fff; }
+    50% { background-color: #e8f0fe; }
+    100% { background-color: #fff; }
+}
+
+.toast {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+</style>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Adiciona efeito de fade nas linhas ao carregar a página
-    const rows = document.querySelectorAll('.product-row');
-    rows.forEach((row, index) => {
-        row.style.animation = `fadeIn 0.3s ease-out ${index * 0.1}s`;
+    // Inicializa os toasts do Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        const toastList = toastElList.map(function(toastEl) {
+            const toast = new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 3000
+            });
+            toast.show();
+            return toast;
+        });
     });
-});
+
+    // Função para mostrar notificação
+    function showNotification(message, type = 'success') {
+        const toastContainer = document.querySelector('.toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0 animate__animated animate__fadeInRight`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        toast.addEventListener('hidden.bs.toast', function () {
+            toast.remove();
+        });
+    }
+
+    function adicionarVariacao() {
+        const container = document.getElementById('variacoes-container');
+        const novaVariacao = `
+            <div class="row mb-3 variacao animate__animated animate__fadeIn">
+                <div class="col-md-3">
+                    <label class="form-label">Nome da Variação</label>
+                    <input type="text" name="variacoes_nome[]" class="form-control" placeholder="Ex: Tamanho P" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Preço</label>
+                    <div class="input-group">
+                        <span class="input-group-text">R$</span>
+                        <input type="number" name="variacoes_preco[]" class="form-control preco-input" step="0.01" placeholder="0.00" required>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Preço Promocional</label>
+                    <div class="input-group">
+                        <span class="input-group-text">R$</span>
+                        <input type="number" name="variacoes_preco_promocional[]" class="form-control" step="0.01" placeholder="0.00" value="0">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Estoque</label>
+                    <input type="number" name="variacoes_estoque[]" class="form-control" placeholder="0" value="0" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="d-flex gap-2 w-100">
+                        <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 drag-handle">
+                            <i class="fas fa-grip-lines"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm flex-grow-1" onclick="removerVariacao(this)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', novaVariacao);
+        showNotification('Nova variação adicionada!', 'info');
+    }
+
+    function removerVariacao(button) {
+        const variacao = button.closest('.variacao');
+        variacao.classList.add('animate__fadeOut');
+        setTimeout(() => {
+            variacao.remove();
+            showNotification('Variação removida!', 'warning');
+        }, 500);
+    }
+
+    function validarFormulario() {
+        const form = document.getElementById('produto-form');
+        if (form.checkValidity()) {
+            showNotification('Salvando produto...', 'info');
+            return true;
+        } else {
+            showNotification('Por favor, preencha todos os campos obrigatórios!', 'danger');
+            return false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoSelect = document.getElementById('tipo');
+        const variacoesSection = document.getElementById('variacoes-section');
+
+        // Inicializa Sortable para permitir arrastar e soltar
+        new Sortable(document.getElementById('variacoes-container'), {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost'
+        });
+
+        function toggleVariacoes() {
+            if (tipoSelect.value === 'V') {
+                variacoesSection.style.display = 'block';
+                variacoesSection.classList.add('animate__animated', 'animate__fadeIn');
+                showNotification('Variações habilitadas!', 'info');
+            } else {
+                variacoesSection.classList.add('animate__fadeOut');
+                setTimeout(() => {
+                    variacoesSection.style.display = 'none';
+                    variacoesSection.classList.remove('animate__fadeOut');
+                }, 500);
+                showNotification('Variações desabilitadas!', 'info');
+            }
+        }
+
+        tipoSelect.addEventListener('change', toggleVariacoes);
+        toggleVariacoes();
+    });
 </script>
+
 {% endblock %}
