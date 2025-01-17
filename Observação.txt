@@ -2,5 +2,5 @@ Atualizar dados : melhores template
 pagina de pagamento 
 Filtragem em Categorias 
 FORMA DA PAGAMENTO 
-CRIAR MODELS PARA NOVOS DADOS COMO DATA, PAGAMENTO , cliente 
 criar aviso em javascrit 
+

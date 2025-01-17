@@ -27,6 +27,8 @@ class Produto(models.Model):
     preco_marketing_promocional = models.FloatField(default=0, verbose_name='Preço Promo.')
     tipo = models.CharField(default='V', max_length=1, choices=(('V', 'Variável'), ('S', 'Simples'),))
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    visivel = models.BooleanField(default=True, verbose_name="Visível na tela de vendas")
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

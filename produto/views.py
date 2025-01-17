@@ -10,8 +10,15 @@ from . import models
 from perfil.models import Perfil
 from .models import Category,Produto
 from django.shortcuts import render
-from pedido.models import Pedido, ItemPedido  # Importa os modelos de Pedido e ItemPedido
+from pedido.models import Pedido, ItemPedido  # Importa os modelos de Pedido e ItemPedido]
+from django.core.paginator import Paginator
+from .forms import ProdutoForm  # Certifique-se de ter um formulário configurado
 
+
+
+
+
+# Pagina de adminstração de produtos
 
 
 def index(request):
@@ -32,10 +39,60 @@ def layout_static(request):
     )
 
 def layout_sidenav_light(request):
+    if request.method == 'POST':
+        if 'delete' in request.POST:
+            produto_id = request.POST.get('produto_id')
+            produto = get_object_or_404(Produto, id=produto_id)
+            produto.delete()
+            return redirect('produto:layout_sidenav_light')
+
+        if 'toggle_visibility' in request.POST:
+            produto_id = request.POST.get('produto_id')
+            produto = get_object_or_404(Produto, id=produto_id)
+            produto.visivel = not produto.visivel
+            produto.save()
+            return redirect('produto:layout_sidenav_light')
+
+    # Pegando todas as categorias
+    categories = Category.objects.all()
+    
+    # Filtrando produtos por categoria
+    category_id = request.GET.get('category')
+    if category_id:
+        produtos_list = Produto.objects.filter(category_id=category_id)
+    else:
+        produtos_list = Produto.objects.all()
+
+    # Configuração do paginador
+    page = request.GET.get('page', 1)
+    paginator = Paginator(produtos_list, 10)  # 10 produtos por página
+    try:
+        produtos = paginator.page(page)
+    except:
+        produtos = paginator.page(1)
+
     return render(
         request,
         'produto/layout-sidenav-light.html',
+        {
+            'produtos': produtos,
+            'categories': categories,
+            'selected_category': category_id
+        }
     )
+
+
+def pagina_adicionar(request):
+    if request.method == "POST":
+        form = ProdutoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('produto/index.html ')  # Substitua pela URL que lista os produtos
+    else:
+        form = ProdutoForm()
+
+    return render(request, 'produto/adicionar.html', {'form': form})
+
 
 def register(request):
     return render(
@@ -56,7 +113,6 @@ def charts(request):
     )
 
 
-
 def tables(request):
     pedidos = Pedido.objects.prefetch_related('itempedido_set').all()  # Obtém todos os pedidos com os itens relacionados
     return render(
@@ -68,6 +124,8 @@ def tables(request):
     )
 
 
+# Pagina de adminstração de produtos -----------------------------------------
+
 
 class ListaProdutos(ListView):
     model = models.Produto
@@ -76,11 +134,16 @@ class ListaProdutos(ListView):
     paginate_by = 10
     ordering = ['-id']
 
+    def get_queryset(self):
+        # Filtra apenas produtos visíveis
+        return models.Produto.objects.filter(visivel=True).order_by(*self.ordering)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         context['is_lista_page'] = True  # Adiciona uma variável para identificar a página
         return context
+
 
 
 class Busca(ListaProdutos):

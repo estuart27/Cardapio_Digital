@@ -21,6 +21,6 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('password/', views.password, name='password'),
     path('charts/', views.charts, name='charts'),
-    path('tables/', views.tables, name='tables'),
-
+    path('tables/', views.tables, name='tables'),         
+    path('adicionar/',views.pagina_adicionar, name='adicionar'),
 ]
