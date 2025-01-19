@@ -23,4 +23,7 @@ urlpatterns = [
     path('charts/', views.charts, name='charts'),
     path('tables/', views.tables, name='tables'),         
     path('adicionar/',views.pagina_adicionar, name='adicionar'),
+    path('editar/<int:produto_id>/', views.editar_produto_modal, name='editar_produto'),
+    
+
 ]

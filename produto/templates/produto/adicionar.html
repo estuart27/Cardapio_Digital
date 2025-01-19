@@ -7,21 +7,18 @@
 <div id="layoutSidenav_content">
     <main>
         <div class="container-fluid px-4">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center animate__animated animate__fadeInDown">
                 <h1 class="mt-4">Adicionar Produtos</h1>
-                <nav aria-label="breadcrumb">
+                {% comment %} <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="{% url 'produto:index' %}">Produtos</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'produto:index' %}" class="text-decoration-none">Produtos</a></li>
                         <li class="breadcrumb-item active">Adicionar produtos</li>
                     </ol>
-                </nav>
+                </nav> {% endcomment %}
             </div>
 
-            <div class="card mb-4 mt-4 shadow-sm">
+            <div class="card mb-4 mt-4 shadow-lg animate__animated animate__fadeIn">
                 <div class="card-body">
-                    <h3 class="card-title mb-4">
-                        {% comment %} <i class="fas fa-box-open me-2"></i>Adicionar Produto e Variações {% endcomment %}
-                    </h3>
                     <form method="post" enctype="multipart/form-data" id="produto-form" onsubmit="return validarFormulario()">
                         {% csrf_token %}
                         <div class="row animate__animated animate__fadeInUp">
@@ -30,48 +27,46 @@
                             </div>
                         </div>
                         
-                        <!-- Variações -->
                         <div id="variacoes-section" class="mt-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3 animate__animated animate__fadeIn">
                                 <h3 class="mb-0">
                                     <i class="fas fa-tags me-2"></i>Variações do Produto
                                 </h3>
-                                <span class="badge bg-secondary">
+                                <span class="badge bg-primary">
                                     <i class="fas fa-arrows-alt me-1"></i>Arraste para reordenar
                                 </span>
                             </div>
                             
                             <div id="variacoes-container" class="sortable-container">
-                                <!-- Template de variação que será clonado -->
                                 <div class="row mb-3 variacao animate__animated animate__fadeIn" data-variacao-id="1">
                                     <div class="col-md-3">
-                                        <label class="form-label">Nome da Variação</label>
-                                        <input type="text" name="variacoes_nome[]" class="form-control" placeholder="Ex: Tamanho P" required>
+                                        <label class="form-label fw-bold">Nome da Variação</label>
+                                        <input type="text" name="variacoes_nome[]" class="form-control form-control-lg transition-border" placeholder="Ex: Tamanho P" required>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label">Preço</label>
+                                        <label class="form-label fw-bold">Preço</label>
                                         <div class="input-group">
-                                            <span class="input-group-text">R$</span>
-                                            <input type="number" name="variacoes_preco[]" class="form-control preco-input" step="0.01" placeholder="0.00" required>
+                                            <span class="input-group-text bg-primary text-white">R$</span>
+                                            <input type="number" name="variacoes_preco[]" class="form-control form-control-lg transition-border preco-input" step="0.01" placeholder="0.00" required>
                                         </div>
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label">Preço Promocional</label>
+                                        <label class="form-label fw-bold">Preço Promocional</label>
                                         <div class="input-group">
-                                            <span class="input-group-text">R$</span>
-                                            <input type="number" name="variacoes_preco_promocional[]" class="form-control" step="0.01" placeholder="0.00">
+                                            <span class="input-group-text bg-success text-white">R$</span>
+                                            <input type="number" name="variacoes_preco_promocional[]" class="form-control form-control-lg transition-border" step="0.01" placeholder="0.00">
                                         </div>
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label">Estoque</label>
-                                        <input type="number" name="variacoes_estoque[]" class="form-control" placeholder="0" required>
+                                        <label class="form-label fw-bold">Estoque</label>
+                                        <input type="number" name="variacoes_estoque[]" class="form-control form-control-lg transition-border" placeholder="0" required>
                                     </div>
                                     <div class="col-md-2 d-flex align-items-end">
                                         <div class="d-flex gap-2 w-100">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 drag-handle">
+                                            <button type="button" class="btn btn-outline-primary btn-lg flex-grow-1 drag-handle hover-scale">
                                                 <i class="fas fa-grip-lines"></i>
                                             </button>
-                                            <button type="button" class="btn btn-outline-danger btn-sm flex-grow-1 remove-variacao">
+                                            <button type="button" class="btn btn-outline-danger btn-lg flex-grow-1 remove-variacao hover-scale">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
@@ -79,17 +74,16 @@
                                 </div>
                             </div>
                             
-                            <button type="button" class="btn btn-outline-primary mb-3" id="adicionar-variacao">
+                            <button type="button" class="btn btn-outline-primary btn-lg mb-3 hover-scale" id="adicionar-variacao">
                                 <i class="fas fa-plus me-1"></i> Adicionar Variação
                             </button>
                         </div>
         
-                        <!-- Botões de Ação -->
                         <div class="mt-4 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary btn-lg hover-scale">
                                 <i class="fas fa-save me-1"></i> Salvar
                             </button>
-                            <a href="{% url 'produto:index' %}" class="btn btn-secondary btn-lg">
+                            <a href="{% url 'produto:index' %}" class="btn btn-secondary btn-lg hover-scale">
                                 <i class="fas fa-arrow-left me-1"></i> Voltar
                             </a>
                         </div>
@@ -104,20 +98,68 @@
             <div class="d-flex align-items-center justify-content-between small">
                 <div class="text-muted">Copyright &copy; Your Website {% now "Y" %}</div>
                 <div>
-                    <a href="#">Privacy Policy</a>
+                    <a href="#" class="text-decoration-none">Privacy Policy</a>
                     &middot;
-                    <a href="#">Terms &amp; Conditions</a>
+                    <a href="#" class="text-decoration-none">Terms &amp; Conditions</a>
                 </div>
             </div>
         </div>
     </footer>
 </div>
 
-<!-- Scripts -->
+<style>
+.transition-border {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.transition-border:focus {
+    border-color: #90CAF9;
+    box-shadow: 0 0 0 0.2rem rgba(144, 202, 249, 0.25);
+    transform: translateY(-2px);
+}
+
+.hover-scale {
+    transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.variacao {
+    transition: all 0.3s ease;
+    padding: 1.5rem;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    margin-bottom: 1rem;
+}
+
+.variacao:hover {
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.animate__animated {
+    animation-duration: 0.5s;
+}
+
+</style>
+
 {% block extra_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// [Previous JavaScript code remains the same]
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializa o Sortable para permitir arrastar e soltar
     new Sortable(document.getElementById('variacoes-container'), {

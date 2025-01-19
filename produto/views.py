@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.template.loader import render_to_string
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views import View
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.contrib import messages
-import json
 from django.db.models import Q
 from . import models
 from perfil.models import Perfil
@@ -14,6 +14,7 @@ from pedido.models import Pedido, ItemPedido  # Importa os modelos de Pedido e I
 from django.core.paginator import Paginator
 from .forms import ProdutoForm  # Certifique-se de ter um formulário configurado
 from django.db import transaction
+import json
 
 
 
@@ -64,19 +65,21 @@ def tables(request):
 
 
 def layout_sidenav_light(request):
+    produtos = Produto.objects.all()  # Obtenha todos os produtos para enviar ao template
+
     if request.method == 'POST':
         if 'delete' in request.POST:
             produto_id = request.POST.get('produto_id')
             produto = get_object_or_404(Produto, id=produto_id)
             produto.delete()
-            return redirect('produto:layout_sidenav_light')
+            messages.success(request, 'Produto excluído com sucesso!')
 
         if 'toggle_visibility' in request.POST:
             produto_id = request.POST.get('produto_id')
             produto = get_object_or_404(Produto, id=produto_id)
             produto.visivel = not produto.visivel
             produto.save()
-            return redirect('produto:layout_sidenav_light')
+            messages.success(request, 'Visibilidade do produto alterada com sucesso!')
 
     # Pegando todas as categorias
     categories = Category.objects.all()
@@ -105,6 +108,36 @@ def layout_sidenav_light(request):
             'selected_category': category_id
         }
     )
+
+
+
+def editar_produto_modal(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+    
+    if request.method == 'POST':
+        form = ProdutoForm(request.POST, request.FILES, instance=produto)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Produto atualizado com sucesso!'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'html': render_to_string('produto/editar_produto_form.html', 
+                                       {'form': form}, 
+                                       request=request)
+            })
+    else:
+        form = ProdutoForm(instance=produto)
+        return JsonResponse({
+            'success': True,
+            'html': render_to_string('produto/editar_produto_form.html', 
+                                   {'form': form}, 
+                                   request=request)
+        })
+
 
 def pagina_adicionar(request):
     if request.method == 'POST':
@@ -151,21 +184,36 @@ def pagina_adicionar(request):
 # Pagina de adminstração de produtos -----------------------------------------
 
 
+from django.views.generic import ListView
+from .models import Produto, Category  # Certifique-se de que o modelo Category está importado
+
 class ListaProdutos(ListView):
-    model = models.Produto
+    model = Produto
     template_name = 'produto/lista.html'
     context_object_name = 'produtos'
-    paginate_by = 10
+    paginate_by = 17
     ordering = ['-id']
 
     def get_queryset(self):
         # Filtra apenas produtos visíveis
-        return models.Produto.objects.filter(visivel=True).order_by(*self.ordering)
+        queryset = Produto.objects.filter(visivel=True)
+
+        # Filtra por categoria, se aplicável
+        category_id = self.request.GET.get('category')
+        if category_id == 'all':
+            # Retorna todos os produtos se a categoria for 'all'
+            return queryset
+        elif category_id:
+            # Filtra produtos pela categoria se uma categoria específica for fornecida
+            queryset = queryset.filter(category_id=category_id)
+        
+        return queryset.order_by(*self.ordering)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
-        context['is_lista_page'] = True  # Adiciona uma variável para identificar a página
+        context['categories'] = Category.objects.all()  # Todas as categorias
+        context['is_lista_page'] = True  # Identificador da página
+        context['selected_category'] = self.request.GET.get('category')  # Categoria selecionada
         return context
 
 

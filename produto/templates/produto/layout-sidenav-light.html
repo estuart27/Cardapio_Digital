@@ -308,12 +308,56 @@
         align-items: center;
         gap: 8px;
     }
+    #toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+    }
+    
+    .messages {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .messages li {
+        background-color: #5F9F9F; /* Cor de fundo do aviso */
+        color: white; /* Cor do texto */
+        padding: 10px 20px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        animation: slideIn 0.5s forwards;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
     
 </style>
+
 
 <div id="layoutSidenav_content">
     <main class="container-fluid px-4">
         <h1 class="main-title animate-fade">Gerenciamento de Produtos</h1>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
         <div class="category-filter">
             <h2 class="filter-title">Filtrar por Categoria</h2>
@@ -337,12 +381,13 @@
             </form>
         </div>
 
+
+
         
         <div class="table-container">
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
                         <th scope="col">Imagem</th>
                         <th scope="col">Nome</th>
                         <th scope="col">Preço</th>
@@ -353,7 +398,6 @@
                 <tbody>
                     {% for produto in produtos %}
                     <tr class="product-row">
-                        <td>{{ forloop.counter }}</td>
                         <td>
                             {% if produto.imagem %}
                             <div class="product-img">
@@ -374,11 +418,25 @@
                             {% endif %}
                         </td>
                         <td class="action-buttons">
+                            <td class="action-buttons">
+                                <a href="{% url 'produto:editar_produto' produto.id %}" 
+                                   class="btn btn-primary btn-sm btn-custom"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#editarProdutoModal">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+
+                            {% comment %} <td class="action-buttons">
+                                <button class="btn btn-primary btn-sm btn-custom" data-bs-toggle="modal" data-bs-target="#editarProdutoModal" 
+                                        data-produto-id="{{ produto.id }}">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                            </td> {% endcomment %}
                             <form method="post" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="produto_id" value="{{ produto.id }}">
                                 <button type="submit" name="delete" 
-                                        class="btn btn-danger btn-sm btn-custom" 
+                                        class="btn btn-danger btn-sm btn-custom ms-2" 
                                         onclick="return confirm('Tem certeza que deseja deletar este produto?')">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
@@ -471,6 +529,21 @@
         </div>
     </main>
 
+    <div class="modal fade" id="editarProdutoModal" tabindex="-1" aria-labelledby="editarProdutoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarProdutoModalLabel">Editar Produto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- O conteúdo do formulário será carregado aqui -->
+                    <div id="editar-produto-form-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer-custom py-4 mt-auto">
         <div class="container-fluid px-4">
             <div class="d-flex align-items-center justify-content-between small">
@@ -492,4 +565,175 @@
 <script src="{% static 'assets/demo/chart-bar-demo.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
 <script src="{% static 'js/datatables-simple-demo.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('editarProdutoModal');
+        const formContainer = document.getElementById('editar-produto-form-container');
+    
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const url = button.getAttribute('href');
+    
+            // Carregar o formulário
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        formContainer.innerHTML = data.html;
+                        
+                        // Adicionar evento de submit ao formulário
+                        const form = document.getElementById('editarProdutoForm');
+                        form.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            
+                            const formData = new FormData(form);
+                            fetch(url, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Fechar o modal e recarregar a página
+                                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                                    modalInstance.hide();
+                                    window.location.reload();
+                                } else {
+                                    // Atualizar o formulário com os erros
+                                    formContainer.innerHTML = data.html;
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erro:', error);
+                            });
+                        });
+                    }
+                })
+                .catch(error => {
+                    formContainer.innerHTML = '<p>Erro ao carregar o formulário.</p>';
+                    console.error('Erro:', error);
+                });
+        });
+    });
+</script>
+<script>
+function confirmarDelecao(produtoId) {
+    Swal.fire({
+        title: 'Confirmar exclusão',
+        text: "Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Criar e enviar o formulário
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.style.display = 'none';
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            form.appendChild(csrfInput);
+
+            const produtoInput = document.createElement('input');
+            produtoInput.type = 'hidden';
+            produtoInput.name = 'produto_id';
+            produtoInput.value = produtoId;
+            form.appendChild(produtoInput);
+
+            const deleteInput = document.createElement('input');
+            deleteInput.type = 'hidden';
+            deleteInput.name = 'delete';
+            form.appendChild(deleteInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+function confirmarVisibilidade(produtoId, visivel) {
+    const acao = visivel ? 'ocultar' : 'mostrar';
+    
+    Swal.fire({
+        title: `Confirmar ${acao}`,
+        text: `Tem certeza que deseja ${acao} este produto?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: `Sim, ${acao}!`,
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Criar e enviar o formulário
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.style.display = 'none';
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            form.appendChild(csrfInput);
+
+            const produtoInput = document.createElement('input');
+            produtoInput.type = 'hidden';
+            produtoInput.name = 'produto_id';
+            produtoInput.value = produtoId;
+            form.appendChild(produtoInput);
+
+            const visibilityInput = document.createElement('input');
+            visibilityInput.type = 'hidden';
+            visibilityInput.name = 'toggle_visibility';
+            form.appendChild(visibilityInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+// Adicione isso para mostrar mensagens de sucesso após as ações
+document.addEventListener('DOMContentLoaded', function() {
+    // Se houver uma mensagem de sucesso do backend, você pode mostrá-la assim:
+    if (/* sua condição para mensagem de sucesso */) {
+        Swal.fire({
+            title: 'Sucesso!',
+            text: 'Operação realizada com sucesso!',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+});
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const toastContainer = document.getElementById('toast-container');
+        
+        if (toastContainer) {
+            toastContainer.style.opacity = '1'; // Mostra o aviso
+
+            // Remove o aviso após 3 segundos
+            setTimeout(() => {
+                toastContainer.style.opacity = '0'; // Esconde o aviso
+                setTimeout(() => {
+                    toastContainer.remove(); // Remove do DOM após a transição
+                }, 500); // Tempo da transição
+            }, 3000);
+        }
+    });
+</script>
+
+
 {% endblock %}

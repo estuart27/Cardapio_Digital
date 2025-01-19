@@ -12,12 +12,49 @@
     <title>{{ site_name|default:"Sabor & Arte" }} - Cardápio Digital</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .category-tags {
+            padding: 10px;
+            background-color: #f9f9f9; /* Cor de fundo do container */
+            border-radius: 10px; /* Borda arredondada do container */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap; /* Permite que as tags quebrem a linha */
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 8px 16px; /* Espaçamento interno */
+            margin: 5px; /* Margem entre as tags */
+            text-decoration: none; /* Remove o sublinhado do link */
+            color: #555; /* Cor do texto */
+            background-color: #e0e0e0; /* Cor de fundo da tag */
+            border-radius: 20px; /* Borda arredondada das tags */
+            transition: background-color 0.3s; /* Transição suave para a cor de fundo */
+        }
+        
+        .tag:hover {
+            background-color: #d5d5d5; /* Cor ao passar o mouse */
+        }
+        
+        .tag.active {
+            background-color: #2c3e50; /* Azul escuro para a tag ativa */
+            color: white; /* Cor do texto para a tag ativa */
+            border-radius: 20px; /* Borda arredondada da tag ativa */
+        }
+        
+    </style>        
     
     <a href="{% url 'produto:carrinho' %}" class="cart-icon" style="text-decoration: none;">
         <i class="fas fa-shopping-cart"></i>
         <span class="cart-count">{{ request.session.carrinho|cart_total_qtd }}</span> <!-- Exibe a quantidade total de itens -->
     </a>
 
+
+    {% comment %} 
     <nav class="nav-container">
         <div class="nav-content">
             <div class="category-list">
@@ -27,7 +64,64 @@
                 {% endfor %}
             </div>
         </div>
-    </nav>
+    </nav> {% endcomment %}
+    {% comment %} <div class="category-filter">
+        <h2 class="filter-title">Filtrar por Categoria</h2>
+        <form method="get" class="d-flex align-items-center">
+            <select name="category" class="category-select">
+                <option value="">Todas as categorias</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}" {% if selected_category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="filter-button">
+                <i class="fas fa-filter"></i> Filtrar
+            </button>
+            {% if selected_category %}
+            <a href="{% url 'produto:layout_sidenav_light' %}" class="clear-filter">
+                <i class="fas fa-times"></i> Limpar
+            </a>
+            {% endif %}
+        </form>
+    </div> {% endcomment %}
+    <div class="category-tags">
+        <div class="tags-container">
+            <a href="?category=all" class="tag {% if selected_category == 'all' %}active{% endif %}">
+                Todos
+            </a>
+            {% for category in categories %}
+            <a href="?category={{ category.id }}" class="tag {% if selected_category|stringformat:"s" == category.id|stringformat:"s" %}active{% endif %}">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    
+
+    {% comment %} <nav class="nav-container">
+        <div class="nav-content">
+            <div class="category-list">
+                <button class="category-btn active" data-category="all">Todos</button>
+                {% for category in categories %}
+                <button class="category-btn" data-category="{{ category.slug }}">{{ category.name }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </nav>  {% endcomment %}
+
+    {% comment %} <div class="category-tags">
+        <h2 class="filter-title">Escolha uma Categoria</h2>
+        <div class="tags-container">
+            {% for category in categories %}
+            <a href="?category={{ category.id }}" class="tag {% if selected_category|stringformat:"s" == category.id|stringformat:"s" %}active{% endif %}">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div> {% endcomment %}
+    
   
     <main class="menu-section">
         <div class="menu-grid">

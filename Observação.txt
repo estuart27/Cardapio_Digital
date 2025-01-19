@@ -1,6 +1,7 @@
 Atualizar dados : melhores template
 pagina de pagamento 
-Filtragem em Categorias 
 FORMA DA PAGAMENTO 
 criar aviso em javascrit 
+Barra lateral nao funcionando em algumas paginas 
+Criar um banco de dados para extrair dos dados do de criacao , de preparo e de despacho
 
