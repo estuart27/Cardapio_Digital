@@ -11,6 +11,7 @@ from . import models
 from . import forms
 
 
+
 class BasePerfil(View):
     template_name = 'perfil/criar.html'
 

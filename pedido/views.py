@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, reverse
+from django.shortcuts import redirect, reverse,render
 from django.views.generic import ListView, DetailView
 from django.views import View
 # from django.http import HttpResponse
@@ -9,6 +9,98 @@ from produto.models import Variacao
 
 from utils import utils
 
+
+from django.shortcuts import render
+from .models import Pedido, ItemPedido
+from django.core.serializers import serialize
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import json
+
+def painel(request):
+    # Busca todos os pedidos ordenados por data (mais recentes primeiro)
+    pedidos = Pedido.objects.all().order_by('-data')
+    
+    # Prepara os dados dos pedidos incluindo seus itens
+    pedidos_data = []
+    for pedido in pedidos:
+        itens = ItemPedido.objects.filter(pedido=pedido)
+        itens_data = [
+            {
+                'produto': item.produto,
+                'quantidade': item.quantidade,
+                'observacao': item.observacao,
+                'preco': float(item.preco),
+                'preco_promocional': float(item.preco_promocional)
+            } for item in itens
+        ]
+        
+        pedido_data = {
+            'id': pedido.pk,
+            'status': pedido.status,
+            'total': float(pedido.total),
+            'forma_pagamento': pedido.forma_pagamento,
+            'data': pedido.data.strftime('%d/%m/%Y %H:%M'),
+            'itens': itens_data,
+            'usuario': pedido.usuario.username
+        }
+        pedidos_data.append(pedido_data)
+
+    # Passa os dados para o template
+    context = {
+        'pedidos_json': json.dumps(pedidos_data),
+        'status_choices': dict(Pedido._meta.get_field('status').choices)
+    }
+    
+    return render(
+        request,
+        'pedido/Painel.html',
+        context
+    )
+
+# View para atualizar o status do pedido via AJAX
+@require_http_methods(["POST"])
+def atualizar_status(request, pedido_id):
+    try:
+        data = json.loads(request.body)
+        pedido = Pedido.objects.get(pk=pedido_id)
+        pedido.status = data.get('status')
+        pedido.save()
+        return JsonResponse({'success': True})
+    except Pedido.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Pedido não encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+# View para buscar pedidos atualizados via AJAX
+def buscar_pedidos(request):
+    pedidos = Pedido.objects.all().order_by('-data')
+    pedidos_data = []
+    
+    for pedido in pedidos:
+        itens = ItemPedido.objects.filter(pedido=pedido)
+        itens_data = [
+            {
+                'produto': item.produto,
+                'quantidade': item.quantidade,
+                'observacao': item.observacao,
+                'preco': float(item.preco),
+                'preco_promocional': float(item.preco_promocional)
+            } for item in itens
+        ]
+        
+        pedido_data = {
+            'id': pedido.pk,
+            'status': pedido.status,
+            'total': float(pedido.total),
+            'forma_pagamento': pedido.forma_pagamento,
+            'data': pedido.data.strftime('%d/%m/%Y %H:%M'),
+            'itens': itens_data,
+            'usuario': pedido.usuario.username
+        }
+        pedidos_data.append(pedido_data)
+    
+    return JsonResponse(pedidos_data, safe=False)
 
 class DispatchLoginRequiredMixin(View):
     def dispatch(self, *args, **kwargs):
@@ -127,3 +219,4 @@ class Lista(DispatchLoginRequiredMixin, ListView):
     template_name = 'pedido/lista.html'
     paginate_by = 10
     ordering = ['-id']
+

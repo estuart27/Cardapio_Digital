@@ -29,11 +29,18 @@ def login(request):
         request,
         'produto/login.html',
     )
+
+
 def layout_static(request):
-    return render(
-        request,
-        'produto/layout-static.html',
-    )
+    clientes = Perfil.objects.all()
+    total_clientes = clientes.count()
+    
+    context = {
+        'clientes': clientes,
+        'total_clientes': total_clientes,
+    }
+    return render(request, 'produto/layout-static.html', context)
+
 
 def register(request):
     return render(
