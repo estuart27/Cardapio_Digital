@@ -4,311 +4,344 @@
 {% block title %}Painel de Pedidos{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="header">
-        <h1>Painel de Pedidos</h1>
-        <div class="filters">
-            <button class="filter-btn active" data-filter="todos">Todos</button>
-            <button class="filter-btn" data-filter="Criado">Criados</button>
-            <button class="filter-btn" data-filter="Aprovado">Aprovados</button>
-            <button class="filter-btn" data-filter="Pendente">Pendentes</button>
-            <button class="filter-btn" data-filter="Enviado">Enviados</button>
-            <button class="filter-btn" data-filter="Finalizado">Finalizados</button>
-        </div>
-    </div>
-    <div class="orders-grid" id="ordersGrid">
-        <!-- Os pedidos serão inseridos aqui via JavaScript -->
+<div id="layoutSidenav_content">
+    <div class="container-fluid px-4">
+        <header class="dashboard-header">
+            <h1>Painel de Pedidos</h1>
+            <nav class="status-nav">
+                <a href="?status=todos" class="nav-link {% if not request.GET.status or request.GET.status == 'todos' %}active{% endif %}">
+                    Todos
+                </a>
+                <a href="?status=Criado" class="nav-link {% if request.GET.status == 'Criado' %}active{% endif %}">
+                    Criados
+                </a>
+                <a href="?status=Aprovado" class="nav-link {% if request.GET.status == 'Aprovado' %}active{% endif %}">
+                    Aprovados
+                </a>
+                <a href="?status=Pendente" class="nav-link {% if request.GET.status == 'Pendente' %}active{% endif %}">
+                    Pendentes
+                </a>
+                <a href="?status=Enviado" class="nav-link {% if request.GET.status == 'Enviado' %}active{% endif %}">
+                    Enviados
+                </a>
+                <a href="?status=Finalizado" class="nav-link {% if request.GET.status == 'Finalizado' %}active{% endif %}">
+                    Finalizados
+                </a>
+            </nav>
+        </header>
+
+        <main class="orders-grid">
+            {% for pedido in pedidos %}
+            <article class="order-card" data-id="{{ pedido.id }}">
+                <header class="order-header">
+                    <div class="order-header-content">
+                        <h2 class="order-id">Pedido #{{ pedido.id }}</h2>
+                        <span class="status-badge status-{{ pedido.status }}">
+                            {{ pedido.status }}
+                        </span>
+                    </div>
+                    <div class="order-meta">
+                        <p class="customer-info">Cliente: <strong>{{ pedido.usuario }}</strong></p>
+                        <p class="order-date">Data: <strong>{{ pedido.data|date:"d/m/Y H:i" }}</strong></p>
+                    </div>
+                </header>
+
+                <div class="order-content">
+                    <div class="items-container">
+                        <h3 class="items-title">Itens do Pedido</h3>
+                        <ul class="items-list">
+                            {% for item in pedido.itens.all %}
+                            <li class="order-item">
+                                <div class="item-details">
+                                    <span class="item-quantity">{{ item.quantidade }}x</span>
+                                    <div class="item-info">
+                                        <span class="item-name">{{ item.produto }}</span>
+                                        {% if item.observacao %}
+                                        <span class="item-note">({{ item.observacao }})</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="item-price">
+                                    {% if item.preco_promocional > 0 %}
+                                    <s class="original-price">R$ {{ item.preco|floatformat:2 }}</s>
+                                    <span class="promotional-price">R$ {{ item.preco_promocional|floatformat:2 }}</span>
+                                    {% else %}
+                                    <span class="regular-price">R$ {{ item.preco|floatformat:2 }}</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="order-summary">
+                        <div class="order-total">
+                            <span class="total-label">Total do Pedido:</span>
+                            <span class="total-value">R$ {{ pedido.total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="order-footer">
+                    <div class="payment-info">
+                        <span class="payment-label">Forma de Pagamento:</span>
+                        <span class="payment-value">{{ pedido.forma_pagamento|default:"Não definido" }}</span>
+                    </div>
+                    {% csrf_token %}
+                    <div class="status-control">
+                        <label for="status-select-{{ pedido.id }}" class="status-label">Alterar Status:</label>
+                        <select name="status" id="status-select-{{ pedido.id }}" onchange="this.form.submit()" class="status-select">
+                            {% for value, label in status_choices.items %}
+                            <option value="{{ value }}" {% if pedido.status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </footer>
+            </article>
+            {% endfor %}
+        </main>
     </div>
 </div>
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    :root {
+        --color-primary: #3b82f6;
+        --color-success: #10b981;
+        --color-warning: #f59e0b;
+        --color-danger: #ef4444;
+        --color-info: #3b82f6;
+        --color-purple: #8b5cf6;
+        --color-gray-50: #f9fafb;
+        --color-gray-100: #f3f4f6;
+        --color-gray-200: #e5e7eb;
+        --color-gray-300: #d1d5db;
+        --color-gray-400: #9ca3af;
+        --color-gray-500: #6b7280;
+        --color-gray-600: #4b5563;
+        --color-gray-700: #374151;
+        --color-gray-800: #1f2937;
+        --color-gray-900: #111827;
+        --font-size-sm: 0.875rem;
+        --font-size-base: 1rem;
+        --font-size-lg: 1.125rem;
+        --font-size-xl: 1.25rem;
+        --font-size-2xl: 1.5rem;
+        --spacing-1: 0.25rem;
+        --spacing-2: 0.5rem;
+        --spacing-3: 0.75rem;
+        --spacing-4: 1rem;
+        --spacing-5: 1.25rem;
+        --spacing-6: 1.5rem;
     }
 
-    body {
-        background-color: #f0f2f5;
-        min-height: 100vh;
-        padding: 2rem;
+    .dashboard-header {
+        margin: var(--spacing-6) 0;
+        padding: var(--spacing-4);
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
+    .dashboard-header h1 {
+        font-size: var(--font-size-2xl);
+        font-weight: 700;
+        color: var(--color-gray-900);
+        margin-bottom: var(--spacing-4);
+        text-align: center;
     }
 
-    .header {
-        margin-bottom: 2rem;
-    }
-
-    .header h1 {
-        font-size: 2.5rem;
-        color: #1a1a1a;
-        margin-bottom: 1.5rem;
-    }
-
-    .filters {
+    .status-nav {
         display: flex;
-        gap: 1rem;
-        margin-bottom: 2rem;
+        justify-content: center;
+        gap: var(--spacing-2);
+        flex-wrap: wrap;
+        padding: var(--spacing-3);
+        background: var(--color-gray-50);
+        border-radius: 0.75rem;
     }
 
-    .filter-btn {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
+    .nav-link {
+        padding: var(--spacing-3) var(--spacing-5);
+        border-radius: 0.5rem;
+        font-size: var(--font-size-base);
         font-weight: 600;
-        transition: all 0.3s ease;
-        background: #fff;
-        color: #666;
-    }
-
-    .filter-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .filter-btn.active {
-        background: #3b82f6;
-        color: white;
+        transition: all 0.2s;
     }
 
     .orders-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: var(--spacing-6);
+        padding: var(--spacing-4);
     }
 
     .order-card {
         background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-    }
-
-    .order-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .order-header {
-        padding: 1.25rem;
-        background: #f8fafc;
-        border-bottom: 1px solid #edf2f7;
+        padding: var(--spacing-5);
+        background: var(--color-gray-50);
+        border-bottom: 2px solid var(--color-gray-200);
+    }
+
+    .order-header-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: var(--spacing-3);
     }
 
     .order-id {
-        font-size: 1.25rem;
-        font-weight: bold;
-        color: #1a1a1a;
+        font-size: var(--font-size-xl);
+        font-weight: 700;
+        color: var(--color-gray-900);
+    }
+
+    .order-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: var(--font-size-base);
     }
 
     .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 999px;
-        font-size: 0.875rem;
+        padding: var(--spacing-2) var(--spacing-4);
+        border-radius: 9999px;
+        font-size: var(--font-size-sm);
         font-weight: 600;
-        color: white;
+        letter-spacing: 0.5px;
     }
 
-    .status-Criado { background: #f59e0b; }
-    .status-Aprovado { background: #10b981; }
-    .status-Pendente { background: #ef4444; }
-    .status-Enviado { background: #3b82f6; }
-    .status-Finalizado { background: #8b5cf6; }
-
-    .order-content {
-        padding: 1.25rem;
+    .items-container {
+        padding: var(--spacing-4);
     }
 
-    .items-list {
-        margin-bottom: 1rem;
+    .items-title {
+        font-size: var(--font-size-lg);
+        font-weight: 600;
+        color: var(--color-gray-800);
+        margin-bottom: var(--spacing-4);
     }
 
-    .item {
+    .order-item {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0;
-        color: #4b5563;
+        padding: var(--spacing-3) 0;
+        border-bottom: 1px solid var(--color-gray-200);
     }
 
-    .item::before {
-        content: "•";
-        color: #9ca3af;
+    .item-quantity {
+        font-size: var(--font-size-lg);
+        font-weight: 600;
+        color: var(--color-gray-700);
+        margin-right: var(--spacing-3);
+    }
+
+    .item-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .item-name {
+        font-size: var(--font-size-base);
+        font-weight: 500;
+        color: var(--color-gray-900);
+    }
+
+    .item-note {
+        font-size: var(--font-size-sm);
+        color: var(--color-gray-600);
+        margin-top: var(--spacing-1);
+    }
+
+    .item-price {
+        text-align: right;
+    }
+
+    .original-price {
+        font-size: var(--font-size-sm);
+        color: var(--color-gray-500);
+    }
+
+    .promotional-price, .regular-price {
+        font-size: var(--font-size-base);
+        font-weight: 600;
+        color: var(--color-gray-900);
+    }
+
+    .order-summary {
+        background: var(--color-gray-50);
+        padding: var(--spacing-4);
+        margin-top: var(--spacing-4);
+        border-radius: 0.5rem;
+    }
+
+    .order-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: var(--font-size-xl);
+        font-weight: 700;
     }
 
     .order-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1.25rem;
-        border-top: 1px solid #edf2f7;
+        padding: var(--spacing-4);
+        background: var(--color-gray-50);
+        border-top: 2px solid var(--color-gray-200);
     }
 
-    .price {
-        font-weight: bold;
-        color: #1a1a1a;
-        font-size: 1.125rem;
+    .payment-info {
+        font-size: var(--font-size-base);
     }
 
-    .notification {
-        position: fixed;
-        top: 2rem;
-        right: 2rem;
-        padding: 1rem 2rem;
-        background: #10b981;
-        color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        z-index: 1000;
+    .payment-label, .status-label {
+        font-weight: 600;
+        color: var(--color-gray-700);
+        margin-right: var(--spacing-2);
+    }
+
+    .status-select {
+        padding: var(--spacing-2) var(--spacing-4);
+        border-radius: 0.5rem;
+        border: 2px solid var(--color-gray-300);
+        font-size: var(--font-size-base);
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+        .orders-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .order-meta {
+            flex-direction: column;
+            gap: var(--spacing-2);
+        }
+
+        .status-nav {
+            flex-direction: column;
+        }
+
+        .nav-link {
+            text-align: center;
+        }
     }
 </style>
 
 <script>
-    // Inicializa os pedidos com os dados do servidor
-    let orders = {{ pedidos_json|safe }};
-    let currentFilter = 'todos';
-
-    function showNotification(message) {
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-    }
-
-    function updateOrderStatus(orderId, newStatus) {
-        fetch(`/pedido/api/pedidos/${orderId}/status/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({ status: newStatus })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Erro ao atualizar status');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showNotification(`Pedido #${orderId} atualizado para ${newStatus}`);
-                loadOrders();
-            } else {
-                showNotification('Erro ao atualizar status');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Erro ao atualizar status');
-        });
-    }
-
-    function loadOrders() {
-        fetch('/pedido/api/pedidos/')
-            .then(response => response.json())
-            .then(data => {
-                orders = data;
-                renderOrders();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Erro ao carregar pedidos');
-            });
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    function renderOrders() {
-        const container = document.getElementById('ordersGrid');
-        const filteredOrders = orders.filter(order => 
-            currentFilter === 'todos' || order.status === currentFilter
-        );
-
-        container.innerHTML = filteredOrders.map(order => `
-            <div class="order-card" data-id="${order.id}">
-                <div class="order-header">
-                    <span class="order-id">Pedido #${order.id}</span>
-                    <span class="status-badge status-${order.status}">
-                        ${order.status}
-                    </span>
-                </div>
-                <div class="order-content">
-                    <div class="user-info">
-                        <small>Cliente: ${order.usuario}</small>
-                        <br>
-                        <small>Data: ${order.data}</small>
-                    </div>
-                    <div class="items-list">
-                        ${order.itens.map(item => `
-                            <div class="item">
-                                ${item.quantidade}x ${item.produto}
-                                ${item.observacao ? `<small>(${item.observacao})</small>` : ''}
-                                <div class="item-price">
-                                    ${item.preco_promocional > 0 
-                                        ? `<s>R$ ${item.preco.toFixed(2)}</s> R$ ${item.preco_promocional.toFixed(2)}`
-                                        : `R$ ${item.preco.toFixed(2)}`}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="price">Total: R$ ${order.total.toFixed(2)}</div>
-                </div>
-                <div class="order-footer">
-                    <div>Pagamento: ${order.forma_pagamento || 'Não definido'}</div>
-                    <div class="actions">
-                        <select onchange="updateOrderStatus(${order.id}, this.value)"
-                                class="status-select">
-                            {% for value, label in status_choices.items %}
-                                <option value="{{ value }}" ${order.status === '{{ value }}' ? 'selected' : ''}>
-                                    {{ label }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // Configurar filtros
-    document.querySelectorAll('.filter-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            currentFilter = button.dataset.filter;
-            renderOrders();
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        setInterval(function() {
+            window.location.reload();
+        }, 60000);
     });
-
-    // Renderização inicial
-    renderOrders();
-
-    // Atualizar pedidos a cada minuto
-    setInterval(loadOrders, 60000);
 </script>
 {% endblock %}

@@ -10,9 +10,7 @@ class Pedido(models.Model):
         default="Criado",
         max_length=10,
         choices=(
-            ('Aprovado', 'Aprovado'),
             ('Criado', 'Criado'),
-            ('Reprovado', 'Reprovado'),
             ('Pendente', 'Pendente'),
             ('Enviado', 'Enviado'),
             ('Finalizado', 'Finalizado'),
@@ -20,6 +18,10 @@ class Pedido(models.Model):
     )
     data = models.DateTimeField(auto_now_add=True)
     forma_pagamento = models.CharField(max_length=50, blank=True, null=True)
+
+    @property
+    def timestamp(self):
+        return self.data.isoformat()
 
     def __str__(self):
         return f'Pedido N. {self.pk}'
