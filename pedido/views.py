@@ -12,20 +12,21 @@ from utils import utils
 
 def painel(request):
     status = request.GET.get('status', 'todos')
-    
+
     # Base queryset
     queryset = Pedido.objects.all().order_by('-data')
-    
+
     # Filter by status if specified
     if status != 'todos':
         queryset = queryset.filter(status=status)
-    
+
     context = {
         'pedidos': queryset,
         'status_choices': dict(Pedido._meta.get_field('status').choices)
     }
-    
+
     return render(request, 'pedido/Painel.html', context)
+
 
 @require_http_methods(["POST"])
 def atualizar_status(request, pedido_id):
@@ -40,9 +41,6 @@ def atualizar_status(request, pedido_id):
 
 
 
-
-
-       
 class DispatchLoginRequiredMixin(View):
     def dispatch(self, *args, **kwargs):
         if not self.request.user.is_authenticated:

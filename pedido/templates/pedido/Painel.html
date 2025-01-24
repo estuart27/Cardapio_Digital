@@ -50,13 +50,14 @@
                     <div class="items-container">
                         <h3 class="items-title">Itens do Pedido</h3>
                         <ul class="items-list">
-                            {% for item in pedido.itens.all %}
+                            {% comment %} {% for item in pedido.itens.all %} {% endcomment %}
+                            {% for item in pedido.itempedido_set.all %}
                             <li class="order-item">
                                 <div class="item-details">
-                                    <span class="item-quantity">{{ item.quantidade }}x</span>
+                                    <span class="item-quantity">{{ item.quantidade }}x ({{ item.variacao }}) {{ item.produto }}</span>
                                     <div class="item-info">
-                                        <span class="item-name">{{ item.produto }}</span>
                                         {% if item.observacao %}
+                                        {% comment %} {{ item.observacao }} {% endcomment %}
                                         <span class="item-note">({{ item.observacao }})</span>
                                         {% endif %}
                                     </div>
@@ -134,6 +135,92 @@
         --spacing-4: 1rem;
         --spacing-5: 1.25rem;
         --spacing-6: 1.5rem;
+    }
+
+    :root {
+        /* Status Colors */
+        --status-criado-bg: #e6f2ff;
+        --status-criado-text: #1e40af;
+        --status-aprovado-bg: #d1fae5;
+        --status-aprovado-text: #047857;
+        --status-pendente-bg: #fef3c7;
+        --status-pendente-text: #b45309;
+        --status-enviado-bg: #f3e8ff;
+        --status-enviado-text: #6d28d9;
+        --status-finalizado-bg: #dcfce7;
+        --status-finalizado-text: #15803d;
+    
+        /* Additional Color Refinements */
+        --color-background: #f4f4f6;
+        --color-card-background: #ffffff;
+        --color-border: #e5e7eb;
+        --color-text-primary: #1f2937;
+        --color-text-secondary: #4b5563;
+    }
+    
+    body {
+        background-color: var(--color-background);
+    }
+    
+    .status-badge {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-badge.status-Criado {
+        background-color: var(--status-criado-bg);
+        color: var(--status-criado-text);
+    }
+    
+    .status-badge.status-Aprovado {
+        background-color: var(--status-aprovado-bg);
+        color: var(--status-aprovado-text);
+    }
+    
+    .status-badge.status-Pendente {
+        background-color: var(--status-pendente-bg);
+        color: var(--status-pendente-text);
+    }
+    
+    .status-badge.status-Enviado {
+        background-color: var(--status-enviado-bg);
+        color: var(--status-enviado-text);
+    }
+    
+    .status-badge.status-Finalizado {
+        background-color: var(--status-finalizado-bg);
+        color: var(--status-finalizado-text);
+    }
+    
+    .nav-link {
+        transition: all 0.3s ease;
+    }
+    
+    .nav-link.active {
+        background-color: var(--color-primary);
+        color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .order-card {
+        border: 1px solid var(--color-border);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .status-select {
+        border-color: var(--color-border);
+        background-color: white;
+        transition: border-color 0.3s ease;
+    }
+    
+    .status-select:hover {
+        border-color: var(--color-primary);
     }
 
     .dashboard-header {

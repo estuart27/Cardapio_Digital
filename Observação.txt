@@ -6,4 +6,5 @@ Barra lateral nao funcionando em algumas paginas
 Criar um banco de dados para extrair dos dados do de criacao , de preparo e de despacho
 Contabilizar a quantidade de pedido que cada cliente comprou na loja 
 grafico mostrando horario com mais pedido
-
+Finalizar o Painel do Gestor ( pesquisa mais completa )
+Forms do Marmita nao esta funcionandoas variação 
