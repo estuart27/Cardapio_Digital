@@ -279,7 +279,6 @@ class AdicionarAoCarrinho(View):
             observacao = self.request.GET['observacao']  # Acessa diretamente
         except KeyError:
             observacao = ''
-        print("O parâmetro 'observacao' não foi encontrado na requisição.")
 
         if not variacao_id:
             messages.error(self.request, 'Produto não existe')

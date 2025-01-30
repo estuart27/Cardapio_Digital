@@ -14,6 +14,11 @@ urlpatterns = [
     path('carrinho/', views.Carrinho.as_view(), name="carrinho"),
     path('resumodacompra/', views.ResumoDaCompra.as_view(), name="resumodacompra"),
     path('busca/', views.Busca.as_view(), name="busca"),
+
+
+
+
+    # Novos Modificação e Adição de URLS
     path('inicial', views.index, name='index'),
     path('login/', views.login, name='login'),
     path('layout-static/', views.layout_static, name='layout_static'),

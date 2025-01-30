@@ -68,6 +68,7 @@ class Pagar(DispatchLoginRequiredMixin, DetailView):
 
 
 
+#Com Estoque Removido da verificação
 class SalvarPedido(View):
     def get(self, *args, **kwargs):
         if not self.request.user.is_authenticated:
@@ -77,10 +78,17 @@ class SalvarPedido(View):
             )
             return redirect('perfil:criar')
 
+        # if not self.request.session.get('carrinho'):
+        #     messages.error(
+        #         self.request,
+        #         'Seu carrinho está vazio.'
+        #     )
+        #     return redirect('produto:lista')
+
         if not self.request.session.get('carrinho'):
-            messages.error(
+            messages.success(
                 self.request,
-                'Seu carrinho está vazio.'
+                'Pedido feito com Sucesso.'
             )
             return redirect('produto:lista')
 
@@ -91,17 +99,14 @@ class SalvarPedido(View):
             .filter(id__in=carrinho_variacao_ids)
         )
 
+        # Removida a verificação de estoque
         for variacao in bd_variacoes:
             vid = str(variacao.id)
-            estoque = variacao.estoque
-            qtd_carrinho = carrinho[vid]['quantidade']
             preco_unt = carrinho[vid]['preco_unitario']
             preco_unt_promo = carrinho[vid].get('preco_unitario_promocional', 0)
 
-            if estoque < qtd_carrinho:
-                carrinho[vid]['quantidade'] = estoque
-                carrinho[vid]['preco_quantitativo'] = estoque * preco_unt
-                carrinho[vid]['preco_quantitativo_promocional'] = estoque * preco_unt_promo
+            carrinho[vid]['preco_quantitativo'] = carrinho[vid]['quantidade'] * preco_unt
+            carrinho[vid]['preco_quantitativo_promocional'] = carrinho[vid]['quantidade'] * preco_unt_promo
 
         qtd_total_carrinho = utils.cart_total_qtd(carrinho)
         valor_total_carrinho = utils.cart_totals(carrinho)
@@ -112,6 +117,7 @@ class SalvarPedido(View):
             qtd_total=qtd_total_carrinho,
             status='Criado',
         )
+        
         pedido.save()
 
         ItemPedido.objects.bulk_create(
@@ -143,7 +149,6 @@ class SalvarPedido(View):
         )
 
 
-
 class Detalhe(DispatchLoginRequiredMixin, DetailView):
     model = Pedido
     context_object_name = 'pedido'
@@ -159,3 +164,86 @@ class Lista(DispatchLoginRequiredMixin, ListView):
     paginate_by = 10
     ordering = ['-id']
 
+
+
+
+
+
+
+
+
+
+#observar carrinho e salvarpedido
+# class SalvarPedido(View):
+#     def get(self, *args, **kwargs):
+#         if not self.request.user.is_authenticated:
+#             messages.error(
+#                 self.request,
+#                 'Você precisa fazer login.'
+#             )
+#             return redirect('perfil:criar')
+
+#         if not self.request.session.get('carrinho'):
+#             messages.error(
+#                 self.request,
+#                 'Seu carrinho está vazio.'
+#             )
+#             return redirect('produto:lista')
+
+#         carrinho = self.request.session.get('carrinho')
+#         carrinho_variacao_ids = [v for v in carrinho]
+#         bd_variacoes = list(
+#             Variacao.objects.select_related('produto')
+#             .filter(id__in=carrinho_variacao_ids)
+#         )
+
+#         for variacao in bd_variacoes:
+#             vid = str(variacao.id)
+#             estoque = variacao.estoque
+#             qtd_carrinho = carrinho[vid]['quantidade']
+#             preco_unt = carrinho[vid]['preco_unitario']
+#             preco_unt_promo = carrinho[vid].get('preco_unitario_promocional', 0)
+
+#             if estoque < qtd_carrinho:
+#                 carrinho[vid]['quantidade'] = estoque
+#                 carrinho[vid]['preco_quantitativo'] = estoque * preco_unt
+#                 carrinho[vid]['preco_quantitativo_promocional'] = estoque * preco_unt_promo
+
+#         qtd_total_carrinho = utils.cart_total_qtd(carrinho)
+#         valor_total_carrinho = utils.cart_totals(carrinho)
+
+#         pedido = Pedido(
+#             usuario=self.request.user,
+#             total=valor_total_carrinho,
+#             qtd_total=qtd_total_carrinho,
+#             status='Criado',
+#         )
+#         pedido.save()
+
+#         ItemPedido.objects.bulk_create(
+#             [
+#                 ItemPedido(
+#                     pedido=pedido,
+#                     produto=v['produto_nome'],
+#                     produto_id=v['produto_id'],
+#                     variacao=v['variacao_nome'],
+#                     variacao_id=v['variacao_id'],
+#                     preco=v['preco_quantitativo'],
+#                     preco_promocional=v['preco_quantitativo_promocional'],
+#                     quantidade=v['quantidade'],
+#                     imagem=v['imagem'],
+#                     observacao=v.get('observacao', ''),  # Use v.get para evitar KeyError
+#                 ) for v in carrinho.values()
+#             ]
+#         )
+
+#         del self.request.session['carrinho']
+
+#         return redirect(
+#             reverse(
+#                 'pedido:pagar',
+#                 kwargs={
+#                     'pk': pedido.pk
+#                 }
+#             )
+#         )
