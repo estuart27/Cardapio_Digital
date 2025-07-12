@@ -11,3 +11,10 @@ Forms do Marmita nao esta funcionandoas variação
 
 
 Problema : Depois de Resumodacompra  ele ja anota o pedido como se ja tivesse finalizado , criar um novo viwes ou modificar o viwes Pagar , e de la finalizar o pedido 
+
+
+--------> Comando git <------------
+
+git add . 
+git commit -m "Novo Commit"
+git push origin master
